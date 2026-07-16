@@ -1,0 +1,9 @@
+{
+    "name"   : "imlua",
+    "words"  : ["im%.%w+"],
+    "settings" : {
+        "Lua.diagnostics.globals" : [
+            "im"
+        ]
+    }
+}

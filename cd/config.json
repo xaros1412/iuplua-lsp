@@ -1,0 +1,9 @@
+{
+    "name"   : "cdlua",
+    "words"  : ["cd%.%w+"],
+    "settings" : {
+        "Lua.diagnostics.globals" : [
+            "cd"
+        ]
+    }
+}
