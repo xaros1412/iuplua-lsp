@@ -219,10 +219,129 @@ local function motion_cb(self,  x, y, status) end
 
 ---Action generated when the button 1 (usually left) is selected. This callback is called only after the mouse is released and when it is released inside the button area.
 ---@param self ihandle
----@return integer|`iup.CLOSE`
+---@return integer
 ---
 ---In some elements, this callback may receive more parameters, apart from ih. Please refer to each element's documentation.
-local function action_cb(self,  x, y, status) end
+local function action(self) end
+
+---Called after the value was interactively changed by the user.
+---@param self ihandle
+---@return integer
+local function valuechanged_cb(self) end
+
+---Called when the user double clicks a color cell to change its value.
+---@param self ihandle
+---@param cell integer -- index of the selected cell. If the user double click a preview cell, the respective index is returned
+---@return string|nil  -- a new color or nil to ignore the change. By default nothing is changed
+local function cell_cb(self, cell) end
+
+---Called when the user right click a cell with the Shift key pressed. It is independent of the SHOW_SECONDARY attribute.
+---@param self ihandle
+---@param cell integer                -- index of the selected cell
+---@return `iup.DEFAULT`|`iup.IGNORE` -- If IUP_IGNORE the cell is not redrawn. By default the cell is always redrawn
+local function extended_cb(self, cell) end
+
+---Called when a color is selected. The primary color is selected with the left mouse button, and if existent the secondary is selected with the right mouse button.
+---@param self ihandle
+---@param cell integer                       -- index of the selected cell
+---@param type `iup.PRIMARY`|`iup.SECONDARY` -- indicates if the user selected a primary or secondary color. In can be: IUP_PRIMARY(-1) or IUP_SECONDARY(-2)
+---@return `iup.DEFAULT`|`iup.IGNORE` -- If IUP_IGNORE the selection is not accepted. By default the selection is always accepted
+local function select_cb(self, cell, type) end
+
+---Called when a color is selected. The primary color is selected with the left mouse button, and if existent the secondary is selected with the right mouse button.
+---@param self ihandle
+---@param prim_cell integer -- index of the actual primary cell
+---@param sec_cell  integer -- index of the actual secondary cell
+---@return `iup.DEFAULT`|`iup.IGNORE` -- If IUP_IGNORE the selection is not accepted. By default the selection is always accepted
+local function switch_cb(self, prim_cell, sec_cell) end
+
+---Called when the user releases the left mouse button over the control, defining the selected color.
+---@param self ihandle
+---@param r integer
+---@param g integer
+---@param b integer
+---@return integer|`iup.DEFAULT`
+local function change_cb(self, r, g, b) end
+
+---Called several times while the color is being changed by dragging the mouse over the control.
+---@param self ihandle
+---@param r integer
+---@param g integer
+---@param b integer
+---@return integer|`iup.DEFAULT`
+local function drag_cb(self, r, g, b) end
+
+---Called when the user presses the left mouse button over the dial. The angle here is always zero, except for the circular dial.
+---@param self ihandle
+---@param angle number -- the dial value converted according to UNIT
+---@return integer|`iup.DEFAULT`
+local function button_press_cb(self, angle) end
+
+---Called when the user releases the left mouse button after pressing it over the dial.
+---@param self ihandle
+---@param angle number -- the dial value converted according to UNIT
+---@return integer|`iup.DEFAULT`
+local function button_release_cb(self, angle) end
+
+---Called each time the user moves the dial with the mouse button pressed. The angle the dial rotated since it was initialized is passed as a parameter.
+---@param self ihandle
+---@param angle number -- the dial value converted according to UNIT
+---@return integer|`iup.DEFAULT`
+local function mousemove_cb(self, angle) end
+
+---Action generated when the caret/cursor position is changed.  Valid only when EDITBOX=YES.
+---@param self ihandle
+---@param lin integer -- line and column number (start at `1`)
+---@param col integer -- line and column number (start at `1`)
+---@param pos integer -- `0` based character position
+---@return integer|`iup.DEFAULT`
+local function caret_cb(self, lin, col, pos) end
+
+---Action generated when the user double click an item. Called only when DROPDOWN=NO. (since 3.0)
+---@param self ihandle
+---@param item integer -- Number of the selected item (start at `1`)
+---@param text string  -- Text of the selected item
+---@return integer|`iup.DEFAULT`
+local function dblclick_cb(self, item, text) end
+
+---Action generated when an internal drag and drop is executed. Only active if SHOWDRAGDROP=YES. (since 3.7)
+---@param self ihandle
+---@param drag_id integer   -- Identifier of the clicked item where the drag start
+---@param drop_id integer   -- Identifier of the clicked item where the drop were executed. -1 indicates a drop in a blank area
+---@param isshift integer   -- flag indicating the shift key state
+---@param iscontrol integer -- flag indicating the control key state
+---@return integer|`iup.DEFAULT`|`iup.CONTINUE` -- if returns IUP_CONTINUE, or if the callback is not defined and SHOWDRAGDROP=YES, then the item is moved to the new position. If Ctrl is pressed then the item is copied instead of moved
+local function dragdrop_cb(self, drag_id, drop_id, isshift, iscontrol) end
+
+---Action generated when the list of a dropdown is shown or hidden. Called only when DROPDOWN=YES. (since 3.0)
+---@param self ihandle
+---@param state boolean -- state of the list `1`=shown, `0`=hidden
+---@return integer|`iup.DEFAULT`
+local function dropdown_cb(self, state) end
+
+---Action generated when the list of a dropdown is shown or hidden. Called only when DROPDOWN=YES. (since 3.0)
+---@param self ihandle
+---@param c integer -- Valid alpha numeric character or `0`
+---@param new_value string -- Represents the new text value
+---@return integer|`iup.DEFAULT`|`iup.CLOSE`|`iup.IGNORE` -- `iup.CLOSE` will be processed, but the change will be ignored. If `iup.IGNORE`, the system will ignore the new value. If c is valid and returns a valid alpha numeric character, this new character will be used instead. The VALUE attribute can be changed only if `iup.IGNORE` is returned
+local function edit_cb(self, c, new_value) end
+
+---Action generated when the list of a dropdown is shown or hidden. Called only when DROPDOWN=YES. (since 3.0)
+---@param self ihandle
+---@param value string -- Similar to the VALUE attribute for a multiple selection list. Items selected are marked with `+`, items deselected are marked with `-`, and non changed items are marked with an `x`
+---@return integer|`iup.DEFAULT`
+---
+---This callback is called only when MULTIPLE=YES. If this callback is defined the ACTION callback will not be called.
+---
+---The non changed items marked with `x` are simulated internally by IUP in all systems. If you add or remove items to/from the list and you count on the `x` values, then after adding/removing items set the VALUE attribute to ensure proper `x` values.
+local function multiselect_cb(self, value) end
+
+---Called each time the user clicks in the buttons. It will increment 1 and decrement -1 by default. Holding the Shift key will set a factor of 2, holding Ctrl a factor of 10, and both a factor of 100.
+---@param self ihandle
+---@param inc integer
+---@return integer|`iup.DEFAULT`
+local function spin_cb(self, inc) end
+
 
 
 -- Callbacks end
@@ -577,13 +696,21 @@ animatedlabel.leavewindow_cb = leavewindow_cb
 ---@class button: ihandle
 local button = {}
 ---Action generated when any mouse button is pressed and when it is released. Both calls occur before the ACTION callback when button 1 is being used.
+---@param self ihandle
 ---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processed.
-button.action_cb = action_cb
+button.action = function (self) end
 ---Action generated when the button 1 (usually left) is selected. This callback is called only after the mouse is released and when it is released inside the button area.
-button.button_cb = button_cb
+---@param self ihandle
+---@param button `iup.BUTTON1`|`iup.BUTTON2`|`iup.BUTTON3` -- LBM|MBM|RBM
+---@param pressed `0`|`1` -- 0 -- released; 1 -- pressed
+---@param x integer -- position in the canvas where the event has occurred, in pixels.
+---@param y integer -- position in the canvas where the event has occurred, in pixels.
+---@param status string -- status of the mouse buttons and some keyboard keys at the moment the event is generated. The following macros must be used for verification: iup.isshift(status), iup.iscontrol(status), iup.isbutton1(status), iup.isbutton2(status), iup.isbutton3(status), iup.isbutton4(status), iup.isbutton5(status), iup.isdouble(status), iup.isalt(status), iup.issys(status)
+---@return integer|`iup.CLOSE` -- IUP_CLOSE will be processed
+button.button_cb = function (self, button, pressed, x, y, status) end
 button.map_cb = map_cb
-button.destroy_cb = destroy_cb
 button.unmap_cb = unmap_cb
+button.destroy_cb = destroy_cb
 button.getfocus_cb = getfocus_cb
 button.killfocus_cb = killfocus_cb
 button.enterwindow_cb = enterwindow_cb
@@ -598,25 +725,95 @@ local flatbutton = {}
 local dropbutton = {}
 
 ---@class calendar: ihandle
+---@field today string
+---@field value string
+---@field weeknumbers "NO"|"YES" -- default "NO"
 local calendar = {}
+calendar.valuechanged_cb = valuechanged_cb
+calendar.map_cb = map_cb
+calendar.unmap_cb = unmap_cb
+calendar.destroy_cb = destroy_cb
+calendar.getfocus_cb = getfocus_cb
+calendar.killfocus_cb = killfocus_cb
+calendar.enterwindow_cb = enterwindow_cb
+calendar.leavewindow_cb = leavewindow_cb
+calendar.k_any = k_any
+calendar.help_cb = help_cb
 
 ---@class canvas: ihandle
 local canvas = {}
 
 ---@class colorbar: ihandle
 local colorbar = {}
+colorbar.cell_cb = cell_cb
+colorbar.extended_cb = extended_cb
+colorbar.select_cb = select_cb
+colorbar.switch_cb = switch_cb
+colorbar.map_cb = map_cb
+colorbar.unmap_cb = unmap_cb
+colorbar.destroy_cb = destroy_cb
+colorbar.getfocus_cb = getfocus_cb
+colorbar.killfocus_cb = killfocus_cb
+colorbar.enterwindow_cb = enterwindow_cb
+colorbar.leavewindow_cb = leavewindow_cb
+colorbar.k_any = k_any
+colorbar.help_cb = help_cb
 
 ---@class colorbrowser: ihandle
 local colorbrowser = {}
+colorbrowser.change_cb = change_cb
+colorbrowser.drag_cb = drag_cb
+---Called after the value was interactively changed by the user. It is called whenever a CHANGE_CB or a DRAG_CB would also be called, it is just  called after them. (since 3.0)
+---@param self ihandle
+---@return integer
+colorbrowser.valuechanged_cb =  function (self) end
+colorbrowser.map_cb = map_cb
+colorbrowser.unmap_cb = unmap_cb
+colorbrowser.destroy_cb = destroy_cb
+colorbrowser.getfocus_cb = getfocus_cb
+colorbrowser.killfocus_cb = killfocus_cb
+colorbrowser.enterwindow_cb = enterwindow_cb
+colorbrowser.leavewindow_cb = leavewindow_cb
+colorbrowser.k_any = k_any
+colorbrowser.help_cb = help_cb
 
 ---@class datepick: ihandle
 local datepick = {}
+datepick.valuechanged_cb = valuechanged_cb
+datepick.map_cb = map_cb
+datepick.unmap_cb = unmap_cb
+datepick.destroy_cb = destroy_cb
+datepick.getfocus_cb = getfocus_cb
+datepick.killfocus_cb = killfocus_cb
+datepick.enterwindow_cb = enterwindow_cb
+datepick.leavewindow_cb = leavewindow_cb
+datepick.k_any = k_any
+datepick.help_cb = help_cb
 
 ---@class dial: ihandle
 local dial = {}
+dial.button_press_cb = button_press_cb
+dial.button_release_cb = button_release_cb
+dial.mousemove_cb = mousemove_cb
+---Called after the value was interactively changed by the user. It is called whenever a BUTTON_PRESS_CB, a BUTTON_RELEASE_CB or a MOUSEMOVE_CB would also be called, but if defined those callbacks will not be called. (since 3.0)
+---@param self ihandle
+---@return integer
+dial.valuechanged_cb = function (self) end
+dial.map_cb = map_cb
+dial.unmap_cb = unmap_cb
+dial.destroy_cb = destroy_cb
+dial.getfocus_cb = getfocus_cb
+dial.killfocus_cb = killfocus_cb
+dial.enterwindow_cb = enterwindow_cb
+dial.leavewindow_cb = leavewindow_cb
+dial.k_any = k_any
+dial.help_cb = help_cb
 
 ---@class gauge: ihandle
 local gauge = {}
+gauge.map_cb = map_cb
+gauge.unmap_cb = unmap_cb
+gauge.destroy_cb = destroy_cb
 
 ---@class label: ihandle
 local label = {}
@@ -631,81 +828,238 @@ label.leavewindow_cb = leavewindow_cb
 
 ---@class flatlabel: ihandle
 local flatlabel = {}
+--TODO: iupcnavas callbacks write
+flatlabel.button_cb = button_cb
+flatlabel.motion_cb = motion_cb
+flatlabel.dropfiles_cb = dropfiles_cb
+flatlabel.map_cb = map_cb
+flatlabel.unmap_cb = unmap_cb
+flatlabel.destroy_cb = destroy_cb
+flatlabel.enterwindow_cb = enterwindow_cb
+flatlabel.leavewindow_cb = leavewindow_cb
 
 ---@class flatseparator: ihandle
 local flatseparator = {}
+--TODO: iupcnavas callbacks write
 
 ---@class link: ihandle
 local link = {}
+---Action generated when the link is activated.
+---@param self ihandle
+---@param url string -- The destination address of the link
+---@return `iup.CLOSE`|`iup.DEFAULT` -- `iup.CLOSE` will be processed. If returns `iup.DEFAULT` or it is not defined, the IupHelp function will be called
+link.action = function (self, url) end
 
 ---@class list: ihandle
 local list = {}
+---Action generated when the link is activated.
+---@param self ihandle
+---@param text string -- Text of the changed item
+---@param item integer -- Number of the changed item starting at `1`
+---@param state 1|0 -- Equal to `1` if the option was selected or to `0` if the option was deselected
+---@return `iup.CLOSE`|`iup.DEFAULT` -- IUP_CLOSE will be processed. If returns IUP_DEFAULT or it is not defined, the IupHelp function will be called
+list.action = function (self, text, item, state) end
+
+---Action generated when any mouse button is pressed or released inside the list. Called only when DROPDOWN=NO. If the list has an editbox the message is called when cursor is at the listbox only (ignored at the editbox). Use IupConvertXYToPos to convert (x,y) coordinates in item position. (since 3.0)
+---@param self ihandle
+---@param button `iup.BUTTON1`|`iup.BUTTON2`|`iup.BUTTON3` -- LBM|MBM|RBM
+---@param pressed 0|1 -- `0` -- released; `1` -- pressed
+---@param x integer -- position in the canvas where the event has occurred, in pixels.
+---@param y integer -- position in the canvas where the event has occurred, in pixels.
+---@param status string -- status of the mouse buttons and some keyboard keys at the moment the event is generated. The following macros must be used for verification: iup.isshift(status), iup.iscontrol(status), iup.isbutton1(status), iup.isbutton2(status), iup.isbutton3(status), iup.isbutton4(status), iup.isbutton5(status), iup.isdouble(status), iup.isalt(status), iup.issys(status)
+---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processed
+---
+---This callback can be used to customize a button behavior. For a standard button behavior use the ACTION callback of the IupButton.
+---
+---For a single click the callback is called twice, one for pressed=1 and one for pressed=0. Only after both calls the ACTION callback is called. In Windows, if a dialog is shown or popup in any situation there could be unpredictable results because the native system still has processing to be done even after the callback is called.
+---
+---A double click is preceded by two single clicks, one for pressed=1 and one for pressed=0, and followed by a press=0, all three without the double click flag set. In GTK, it is preceded by an additional two single clicks sequence. For example, for one double click all the following calls are made:
+---
+---Between press and release all mouse events are redirected only to this control, even if the cursor moves outside the element. So the BUTTON_CB callback when released and the MOTION_CB callback can be called with coordinates outside the element rectangle.
+list.button_cb = function (self, button, pressed, x, y, status) end
+list.caret_cb = caret_cb
+list.dblclick_cb = dblclick_cb
+list.dragdrop_cb = dragdrop_cb
+list.dropdown_cb = dropdown_cb
+list.dropfiles_cb = dropfiles_cb
+list.edit_cb = edit_cb
+---Action generated when the mouse is moved over the list. Called only when DROPDOWN=NO. If the list has an editbox the message is called when cursor is at the listbox only (ignored at the editbox). Use IupConvertXYToPos to convert (x,y) coordinates in item position. (since 3.0)
+---@param self ihandle
+---@param x integer -- position in the canvas where the event has occurred, in pixels.
+---@param y integer -- position in the canvas where the event has occurred, in pixels.
+---@param status string -- status of the mouse buttons and some keyboard keys at the moment the event is generated. The following macros must be used for verification: iup.isshift(status), iup.iscontrol(status), iup.isbutton1(status), iup.isbutton2(status), iup.isbutton3(status), iup.isbutton4(status), iup.isbutton5(status), iup.isdouble(status), iup.isalt(status), iup.issys(status)
+---@return integer
+---
+---Between press and release all mouse events are redirected only to this control, even if the cursor moves outside the element. So the BUTTON_CB callback when released and the MOTION_CB callback can be called with coordinates outside the element rectangle.
+list.motion_cb = function (self,  x, y, status) end
+list.multiselect_cb = multiselect_cb
+list.valuechanged_cb = valuechanged_cb
+list.map_cb = map_cb
+list.unmap_cb = unmap_cb
+list.destroy_cb = destroy_cb
+list.getfocus_cb = getfocus_cb
+list.killfocus_cb = killfocus_cb
+list.enterwindow_cb = enterwindow_cb
+list.leavewindow_cb = leavewindow_cb
+list.k_any = k_any
+list.help_cb = help_cb
+--TODO: drag&drop atrributes all
 
 ---@class flatlist: ihandle
 local flatlist = {}
+--TODO:
 
 ---@class progressbar: ihandle
 local progressbar = {}
+progressbar.map_cb = map_cb
+progressbar.unmap_cb = unmap_cb
+progressbar.destroy_cb = destroy_cb
 
 ---@class spin: ihandle
 local spin = {}
+spin.spin_cb = spin_cb
 
 ---@class text: ihandle
 local text = {}
-
----@class multiline: ihandle
-local multiline = {}
+---Action generated when the text is edited, but before its value is actually changed. Can be generated when using the keyboard, undo system or from the clipboard.
+---@param self ihandle
+---@param c integer        -- valid alpha numeric character or `0`
+---@param new_value string -- Represents the new text value
+---@return integer|`iup.DEFAULT`|`iup.CLOSE`|`iup.IGNORE` -- IUP_CLOSE will be processed, but the change will be ignored. If IUP_IGNORE, the system will ignore the new value. If c is valid and returns a valid alpha numeric character, this new character will be used instead. The VALUE attribute can be changed only if IUP_IGNORE is returned
+text.action = function (self, c, new_value) end
+text.button_cb = button_cb
+text.caret_cb = caret_cb
+text.dropfiles_cb = dropfiles_cb
+text.motion_cb = motion_cb
+---Action generated when a spin button is pressed. Valid only when SPIN=YES. When this callback is called the ACTION callback is not called. The VALUE attribute can be changed during this callback only if SPINAUTO=NO. (since 3.0)
+---@param self ihandle
+---@param pos integer -- the value of the spin (after it was incremented)
+---@return integer|`iup.DEFAULT`|`iup.IGNORE` -- `iup.IGNORE` is processed in Windows and Motif
+text.spin_cb = function (self, pos) end
+text.valuechanged_cb = valuechanged_cb
+text.map_cb = map_cb
+text.unmap_cb = unmap_cb
+text.destroy_cb = destroy_cb
+text.getfocus_cb = getfocus_cb
+text.killfocus_cb = killfocus_cb
+text.enterwindow_cb = enterwindow_cb
+text.leavewindow_cb = leavewindow_cb
+text.k_any = k_any
+text.help_cb = help_cb
+-- TODO: drag&drop
 
 ---@class toggle: ihandle
 local toggle = {}
+---Action generated when the toggle's state (on/off) was changed. The callback also receives the toggle's state.
+---@param self ihandle
+---@param state integer -- `1` if the toggle's state was shifted to on; `0` if it was shifted to off
+---@return integer|`iup.CLOSE`|`iup.DEFAULT` -- IUP_CLOSE will be processed
+toggle.action = function (self, state) end
+toggle.valuechanged_cb = valuechanged_cb
+toggle.map_cb = map_cb
+toggle.unmap_cb = unmap_cb
+toggle.destroy_cb = destroy_cb
+toggle.getfocus_cb = getfocus_cb
+toggle.killfocus_cb = killfocus_cb
+toggle.enterwindow_cb = enterwindow_cb
+toggle.leavewindow_cb = leavewindow_cb
+toggle.k_any = k_any
+toggle.help_cb = help_cb
 
 ---@class flattoggle: ihandle
 local flattoggle = {}
+-- TODO: canvas
 
 ---@class tree: ihandle
 local tree = {}
+-- TODO:
+tree.button_cb = button_cb
+tree.motion_cb = motion_cb
+tree.dropfiles_cb = dropfiles_cb
+tree.map_cb = map_cb
+tree.unmap_cb = unmap_cb
+tree.destroy_cb = destroy_cb
+tree.getfocus_cb = getfocus_cb
+tree.killfocus_cb = killfocus_cb
+tree.enterwindow_cb = enterwindow_cb
+tree.leavewindow_cb = leavewindow_cb
+tree.k_any = k_any
+tree.help_cb = help_cb
 
 ---@class flattree: ihandle
 local flattree = {}
+-- TODO: canvas
 
 ---@class val: ihandle
 local val = {}
+val.valuechanged_cb = valuechanged_cb
+val.map_cb = map_cb
+val.unmap_cb = unmap_cb
+val.destroy_cb = destroy_cb
+val.getfocus_cb = getfocus_cb
+val.killfocus_cb = killfocus_cb
+val.enterwindow_cb = enterwindow_cb
+val.leavewindow_cb = leavewindow_cb
+val.k_any = k_any
+val.help_cb = help_cb
 
 ---@class flatval: ihandle
 local flatval = {}
+-- TODO: canvas
+flatval.valuechanged_cb = valuechanged_cb
+flatval.map_cb = map_cb
+flatval.unmap_cb = unmap_cb
+flatval.destroy_cb = destroy_cb
+flatval.getfocus_cb = getfocus_cb
+flatval.killfocus_cb = killfocus_cb
+flatval.enterwindow_cb = enterwindow_cb
+flatval.leavewindow_cb = leavewindow_cb
+flatval.k_any = k_any
+flatval.help_cb = help_cb
 
 ---@class cells: ihandle
 local cells = {}
+-- TODO:
 
 ---@class matrix: ihandle
 local matrix = {}
+-- TODO:
 
 ---@class matrixex: ihandle
 local matrixex = {}
+-- TODO:
 
 ---@class matrixlist: ihandle
 local matrixlist = {}
+-- TODO:
 
 ---@class glcanvas: ihandle
 local glcanvas = {}
+-- TODO:
 
 ---@class glbackgroundbox: ihandle
 local glbackgroundbox = {}
+-- TODO:
 
 ---@class glcontrols: ihandle
 local glcontrols = {}
+-- TODO:
 
 ---@class plot: ihandle
 local plot = {}
+-- TODO:
 
 ---@class olecontrol: ihandle
 local olecontrol = {}
+-- TODO:
 
 ---@class scintilla: ihandle
 local scintilla = {}
+-- TODO:
 
 ---@class webbrowser: ihandle
 local webbrowser = {}
+-- TODO:
 
 -- Controls Standart classes end
 
@@ -795,12 +1149,18 @@ function iup.progressbar(ihandleprogressbar) end
 ---@return spin
 function iup.spin(ihandlespin) end
 
+---@param ihandlespinbox {
+---  [integer]: ihandle;
+---}
+---@return hbox -- hbox{spin}
+function iup.spinbox(ihandlespinbox) end
+
 ---@param ihandletext {}
 ---@return text
 function iup.text(ihandletext) end
 
 ---@param ihandlemultiline {}
----@return multiline
+---@return text
 function iup.multiline(ihandlemultiline) end
 
 ---@param ihandletoggle {}
@@ -870,6 +1230,11 @@ function iup.scintilla(ihandlescintilla) end
 ---@param ihandlewebbrowser {}
 ---@return webbrowser
 function iup.webbrowser(ihandlewebbrowser) end
+
+---@param ihtimer {}
+---@return timer
+function iup.timer(ihtimer) end
+
 
 -- Controls Standart functions end
 
