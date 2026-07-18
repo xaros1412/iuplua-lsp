@@ -342,11 +342,79 @@ local function multiselect_cb(self, value) end
 ---@return integer|`iup.DEFAULT`
 local function spin_cb(self, inc) end
 
+---Action generated when a key is pressed or released. If the key is pressed and held several calls will occur. It is called after the callback K_ANY is processed.
+---@param self ihandle
+---@param c integer -- identifier of typed key. Please refer to the Keyboard Codes table for a list of possible values
+---@param press 1|0 -- `1` is the user pressed the key or `0` otherwise
+---@return integer|`iup.IGNORE`|`iup.CLOSE`
+local function keypress_cb(self, c, press) end
+
+---Called when some manipulation is made to the scrollbar. The canvas is automatically redrawn only if this callback is NOT defined.
+---
+---(GTK 2.8) Also the POSX and POSY values will not be correctly updated for older GTK versions.
+---
+---In Ubuntu, when liboverlay-scrollbar is enabled (the new tiny auto-hide scrollbar) only the IUP_SBPOSV and IUP_SBPOSH codes are used.
+---@param self ihandle
+---@param op `iup.SBUP`|`iup.SBDN`|`iup.SBPGUP`|`iup.SBPGDN`|`iup.SBPOSV`|`iup.SBDRAGV`|`iup.SBLEFT`|`iup.SBRIGHT`|`iup.SBPGLEFT`|`iup.SBPGRIGHT`|`iup.SBPOSH`|`iup.SBDRAGH` -- indicates the operation performed on the scrollbar TODO: new alias for this type
+---@param posx number -- the same as the ACTION canvas callback (corresponding to the values of attributes POSX and POSY)
+---@param posy number -- the same as the ACTION canvas callback (corresponding to the values of attributes POSX and POSY)
+---@return integer|`iup.IGNORE`|`iup.CLOSE`
+---
+---IUP_SBDRAGH and IUP_SBDRAGV are not supported in GTK. During drag IUP_SBPOSH and IUP_SBPOSV are used.
+---
+---In Windows, after a drag when mouse is released IUP_SBPOSH or IUP_SBPOSV are called.
+local function scroll_cb(self, op, posx, posy) end
+
+---[Windows Only]: Action generated when a touch event occurred. Multiple touch events will trigger several calls. Must set TOUCH=Yes to receive this event. (Since 3.3)
+---@param self ihandle
+---@param id integer -- identifies the touch point
+---@param x integer -- position in pixels, relative to the top-left corner of the canvas
+---@param y integer -- position in pixels, relative to the top-left corner of the canvas
+---@param state string -- the touch point state. Can be: DOWN, MOVE or UP. If the point is a "primary" point then "-PRIMARY" is appended to the string
+---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processedU
+local function touch_cb(self, id, x, y, state) end
+
+---[Windows Only]: Action generated when multiple touch events occurred. Must set TOUCH=Yes to receive this event. (Since 3.3)
+---@param self ihandle
+---@param count integer -- Number of touch points in the array
+---@param pid table -- Array of touch point ids
+---@param px table -- Array of touch point x coordinates in pixels, relative to the top-left corner of the canvas
+---@param py table -- Array of touch point y coordinates in pixels, relative to the top-left corner of the canvas
+---@param pstate table -- Array of touch point states. Can be 'D' (DOWN), 'U' (UP) or 'M' (MOVE)
+---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processedU
+local function multitouch_cb(self, count, pid, px, py, pstate) end
+
+---Action generated when the mouse wheel is rotated. If this callback is not defined the wheel will automatically scroll the canvas in the vertical direction by some lines, the SCROLL_CB callback if defined will be called with the IUP_SBDRAGV operation.
+---@param self ihandle
+---@param delta number -- the amount the wheel was rotated in notches
+---@param x integer -- position in the canvas where the event has occurred, in pixels
+---@param y integer -- position in the canvas where the event has occurred, in pixels
+---@param status string -- status of mouse buttons and certain keyboard keys at the moment the event was generated. The same macros used for BUTTON_CB can be used for this status
+---@return integer|`iup.DEFAULT`
+---
+---In Motif and GTK delta is always 1 or -1. In Windows is some situations delta can reach the value of two. In the future with more precise wheels this increment can be changed.
+local function wheel_cb(self, delta, x, y, status) end
+
+---[Windows Only] Action generated when an audio device receives an event.
+---@param self ihandle
+---@param state 1|0|-1 -- can be opening=`1`, done=`0`, or closing=`-1`
+---@return integer|`iup.DEFAULT`
+local function wom_cb(self, state) end
+
 
 
 -- Callbacks end
 
 -- Ihandle methods start
+
+---@class ihDragNDrop: ihandle
+local ihDragNDrop = {}
+ihDragNDrop.dragbegin_cb = dragbegin_cb
+ihDragNDrop.dragdatasize_cb = dragdatasize_cb
+ihDragNDrop.dragdata_cb = dragdata_cb
+ihDragNDrop.dragend_cb = dragend_cb
+ihDragNDrop.dropdata_cb = dropdata_cb
+ihDragNDrop.dropmotion_cb = dropmotion_cb
 
 -- ihandle.postmessage_cb = iup.PostMessage
 
@@ -441,7 +509,7 @@ function iup.PlayInput(filename) end
 
 -- Dialogue classes start
 
----@class dialog: ihandle
+---@class dialog: ihandle, ihDragNDrop
 ---@field background string (non inheritable): Dialog background color or image. Can be a non inheritable alternative to BGCOLOR or can be the name of an image to be tiled on the background. See also the screenshots of the sample.c results with normal background, changing the dialog BACKGROUND, the dialog BGCOLOR and the children BGCOLOR. Not working in GTK 3. (since 3.0)
 ---@field border string (non inheritable) (creation only): Shows a resize border around the dialog. Default: "YES". BORDER=NO is useful only when RESIZE=NO, MAXBOX=NO, MINBOX=NO, MENUBOX=NO and TITLE=NULL, if any of these are defined there will be always some border.
 ---@field cursor string (non inheritable): Defines a cursor for the dialog.
@@ -471,12 +539,6 @@ dialog.enterwindow_cb = enterwindow_cb
 dialog.leavewindow_cb = leavewindow_cb
 dialog.k_any = k_any
 dialog.help_cb = help_cb
-dialog.dragbegin_cb = dragbegin_cb
-dialog.dragdatasize_cb = dragdatasize_cb
-dialog.dragdata_cb = dragdata_cb
-dialog.dragend_cb = dragend_cb
-dialog.dropdata_cb = dropdata_cb
-dialog.dropmotion_cb = dropmotion_cb
 
 -- Dialogue classes end
 -- Dialogue functions start
@@ -718,11 +780,37 @@ button.leavewindow_cb = leavewindow_cb
 button.k_any = k_any
 button.help_cb = help_cb
 
----@class flatbutton: ihandle
+---@class flatbutton: ihandle, canvas, button
 local flatbutton = {}
+---Called after the value was interactively changed by the user. Called only when TOGGLE=Yes. Called after the ACTION callback, but under the same context.
+---@param self ihandle
+---@return integer|`iup.DEFAULT`
+---
+---
+---The IupFlatButton can contain text and image simultaneously.
+---
+---The natural size will be a combination of the size of the image and the title, if any, plus PADDING and SPACING (if both image and title are present).
+---
+---Borders are drawn only when the button is highlighted reproducing the behavior of the IupButton when FLAT=Yes.
+---
+---Buttons are activated using Enter or Space keys.
+---
+---When TOGGLE=Yes, to build a set of mutual exclusive toggles, insert them in a IupRadio container. Only the IupFlatButton controls inside the radio will be part of the exclusive group.
+---
+---When TOGGLE=Yes, the button that is a child of an IupRadio automatically receives a name when its is mapped into the native system. (since 3.16)
+---
+---To replace a IupButton by a IupFlatButton you must change the function call (IupFlatButton does not includes the action callback in the constructor) and change the ACTION callback name to FLAT_ACTION.
+---
+---To replace a IupToggle by a IupFlatButton you must do the same, and set TOGGLE=Yes. But notice that there will be no check box nor radio button.
+---
+---Finally notice that the name of the secondary image attributes are different (for instance IMINACTIVE is IMAGEINACTIVE, IMPRESS is IMAGEPRESS, and so on). To define a button that only shows a color, do the same as in IupButton and don't define TITLE nor IMAGE, but instead of BGCOLOR use FGCOLOR to set the color of the button.
+---
+---When the IupFlatButton displays only a text it will look like a label, use SHOWBORDER=Yes to force the display of the borders all the time.
+flatbutton.valuechanged_cb = function (self) end
 
----@class dropbutton: ihandle
+---@class dropbutton: ihandle, canvas, button
 local dropbutton = {}
+-- TODO:
 
 ---@class calendar: ihandle
 ---@field today string
@@ -740,8 +828,38 @@ calendar.leavewindow_cb = leavewindow_cb
 calendar.k_any = k_any
 calendar.help_cb = help_cb
 
----@class canvas: ihandle
+---@class canvas: ihandle, ihDragNDrop
 local canvas = {}
+---Action generated when the canvas needs to be redrawn.
+---@param self ihandle
+---@param posx number  -- humb position in the horizontal scrollbar. The POSX attribute value. Old parameter in float format, use POSX attribute to get the value in double format
+---@param posy number  -- thumb position in the vertical scrollbar. The POSY attribute value. Old parameter in float format, use POSX attribute to get the value in double format
+---@return integer
+canvas.action = function (self, posx, posy) end
+canvas.button_cb = button_cb
+canvas.dropfiles_cb = dropfiles_cb
+---Called when the canvas gets or looses the focus. It is called after the common callbacks GETFOCUS_CB and KILL_FOCUS_CB.
+---@param self ihandle
+---@param focus integer -- is non zero if the canvas is getting the focus, is zero if it is loosing the focus
+---@return integer
+canvas.focus_cb = function (self, focus) end
+canvas.motion_cb = motion_cb
+canvas.keypress_cb = keypress_cb
+canvas.resize_cb = resize_cb
+canvas.scroll_cb = scroll_cb
+canvas.touch_cb = touch_cb
+canvas.multitouch_cb = multitouch_cb
+canvas.wheel_cb = wheel_cb
+canvas.wom_cb = wom_cb
+canvas.map_cb = map_cb
+canvas.unmap_cb = unmap_cb
+canvas.destroy_cb = destroy_cb
+canvas.getfocus_cb = getfocus_cb
+canvas.killfocus_cb = killfocus_cb
+canvas.enterwindow_cb = enterwindow_cb
+canvas.leavewindow_cb = leavewindow_cb
+canvas.k_any = k_any
+canvas.help_cb = help_cb
 
 ---@class colorbar: ihandle
 local colorbar = {}
@@ -1231,10 +1349,6 @@ function iup.scintilla(ihandlescintilla) end
 ---@return webbrowser
 function iup.webbrowser(ihandlewebbrowser) end
 
----@param ihtimer {}
----@return timer
-function iup.timer(ihtimer) end
-
 
 -- Controls Standart functions end
 
@@ -1341,6 +1455,24 @@ function iup.GetGlobal(name) end
 function iup.StringCompare(str1, str2, casesensitive, lexicographic) end
 
 -- Utility functions end
+
+-- Utility components start
+
+---@class timer: ihandle
+---@field time string|integer -- The time interval in milliseconds. In Windows the minimum value is 10ms
+---@field run string|"YES"|"NO" -- Starts and stops the timer. Possible values: "YES" or "NO". Returns the current timer state. If you have multiple threads start the timer in the main thread
+---@field wid string|"-1" -- (read-only): Returns the native serial number of the timer. Returns `-1` if not running. A timer is mapped only when it is running
+-- TODO: timer doesn't have expand field
+local timer = {}
+---@param self ihandle
+---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processed
+timer.action_cb = function (self) end
+
+---@param ihtimer {}
+---@return timer
+function iup.timer(ihtimer) end
+
+-- Utility components start
 
 -- CONSTS start
 
