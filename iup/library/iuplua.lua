@@ -3,9 +3,89 @@
 local iup = {}
 
 ---@class ihandle: userdata
+local ihandle = {}
+
+---@class ihGUI: ihandle
 ---@field size string
 ---@field expand string
-local ihandle = {}
+local ihGUI = {}
+
+---@class fontAttributes
+---@field fontstyle string -- [(non inheritable)] Replaces or returns the style of the current FONT attribute. Since font styles are case sensitive, this attribute is also case sensitive.
+---@field fontsize string -- [(non inheritable)] Replaces or returns the size of the current FONT attribute.
+---@field fontface string -- [(non inheritable)] Replaces or returns the face name of the current FONT attribute.
+---@field charsize string -- [(read-only, non inheritable)] Returns the average character size of the current FONT attribute. This is the factor used by the SIZE attribute to convert its units to pixels.
+---@field foundry string -- [Motif Only (non inheritable)] Allows to select a foundry for the FONT being selected. Must be set before setting the FONT attribute.
+local fontAttributes = {}
+
+---@class standartAttributes
+local standartAttributes = {}
+
+---The position of the element relative to the origin of the Client area of the native parent. If you add the CLIENTOFFSET attribute of the native parent, you can obtain the coordinates relative to the Window area of the native parent. See the Layout Guide.
+---
+---"x`,`y", where x and y are integer values corresponding to the horizontal and vertical position, respectively, in pixels.
+---
+---It will be changed during the layout computation, except when FLOATING=YES or when used inside a concrete layout container.
+---
+---All, except menus.
+---@type string
+standartAttributes.postion = "x,y"
+
+---Specifies the element minimum size in pixels during the layout process.
+---
+---"width`x`height", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in pixels.
+---
+---You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 0. For example: "x40" (height only = "0x40") or "40x" (width only = "40x0").
+---
+---Default: `"0x0"`
+---
+---The limits are applied during the layout computation. It will limit the Natural size and the Current size.
+---
+---If the element can be expanded, then its empty space will NOT be occupied by other controls although its size will be limited.
+---
+---In the IupDialog will also limit the interactive resize of the dialog.
+---
+---See the Layout Guide for mode details on sizes.
+standartAttributes.minsize = "0x0"
+
+---Specifies the element maximum size in pixels during the layout process.
+---
+---"width`x`height", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in pixels.
+---
+---You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 65535. For example: "x40" (height only = "65535x40") or "40x" (width only = "40x65535").
+---
+---Default: `"65535x65535"`
+standartAttributes.maxsize = "65535x65535"
+
+---Applies a set of attributes to a control. The THEME attribute in inheritable.
+---
+---Name of an IupUser element that contains the attributes. The name is associated in C using IupSetHandle. The name association must be done before setting the attribute. 
+---
+---All attributes in the theme must be strings.
+---
+---Only attributes that are registered in the element will receive its theme value.
+---
+---Attributes that are registered as not being strings, read-only, write-only or callbacks will NOT be applied.
+---
+---The theme can contain an specialized sub-theme for the element class. The element class name will be used with a "IUP" prefix to identify the sub-theme. For instance, if the element is a label, then an attribute called "IUPLABEL" can point to anohter theme name to be applied at the element additionally to the already applied attributes.
+---
+---The global attribute DEFAULTTHEME can be applied to all elements during creation.
+standartAttributes.theme = ""
+
+---Applies a set of attributes to a control. The NTHEME attribute is NOT inheritable.
+---
+---Name of an IupUser element that contains the attributes. The name is associated in C using IupSetHandle. The name association must be done before setting the attribute. 
+---
+---All attributes in the theme must be strings.
+---
+---Only attributes that are registered in the element will receive its theme value.
+---
+---Attributes that are registered as not being strings, read-only, write-only or callbacks will NOT be applied.
+---
+---The theme can contain an specialized sub-theme for the element class. The element class name will be used with a "IUP" prefix to identify the sub-theme. For instance, if the element is a label, then an attribute called "IUPLABEL" can point to anohter theme name to be applied at the element additionally to the already applied attributes.
+---
+---The global attribute DEFAULTTHEME can be applied to all elements during creation.
+standartAttributes.ntheme = ""
 
 -- Callbacks start
 
@@ -407,6 +487,11 @@ local function wom_cb(self, state) end
 
 -- Ihandle methods start
 
+ihandle.destroy = iup.Destroy
+ihandle.append = iup.Append
+ihandle.detach = iup.Detach
+ihandle.insert = iup.Insert
+
 ---@class ihDragNDrop: ihandle
 local ihDragNDrop = {}
 ihDragNDrop.dragbegin_cb = dragbegin_cb
@@ -509,7 +594,10 @@ function iup.PlayInput(filename) end
 
 -- Dialogue classes start
 
----@class dialog: ihandle, ihDragNDrop
+---@class user: ihandle
+local user = {}
+
+---@class dialog: ihGUI, ihDragNDrop
 ---@field background string (non inheritable): Dialog background color or image. Can be a non inheritable alternative to BGCOLOR or can be the name of an image to be tiled on the background. See also the screenshots of the sample.c results with normal background, changing the dialog BACKGROUND, the dialog BGCOLOR and the children BGCOLOR. Not working in GTK 3. (since 3.0)
 ---@field border string (non inheritable) (creation only): Shows a resize border around the dialog. Default: "YES". BORDER=NO is useful only when RESIZE=NO, MAXBOX=NO, MINBOX=NO, MENUBOX=NO and TITLE=NULL, if any of these are defined there will be always some border.
 ---@field cursor string (non inheritable): Defines a cursor for the dialog.
@@ -587,67 +675,71 @@ function dialog:hide() end
 -- Controls containers classes start
 
 
----@class fill: ihandle
+---@class fill: ihGUI, fontAttributes
+---@field expand string -- [(non inheritable)(read-only)]: If User size is not defined, then when inside a IupHbox/IupGridBox EXPAND is HORIZONTAL, when inside a IupVbox EXPAND is VERTICAL. If User size is defined then EXPAND is NO
+---@field size string -- [(non inheritable)]: Defines the width, if inside a IupHbox, or the height, if it is inside a IupVbox. The standard format "wxh" can also be used, but width will be ignored if inside a IupVbox and height will be ignored if inside a IupHbox (since 3.3). When consulted behaves as the standard SIZE/RASTERSIZE attributes
+---@field rastersize string -- [(non inheritable)]: Defines the width, if inside a IupHbox, or the height, if it is inside a IupVbox. The standard format "wxh" can also be used, but width will be ignored if inside a IupVbox and height will be ignored if inside a IupHbox (since 3.3). When consulted behaves as the standard SIZE/RASTERSIZE attributes
+---@field wid string|"-1" -- [(read-only)]: returns -1 if mapped
 local fill = {}
 
----@class space: ihandle
+---@class space: ihGUI
 local space = {}
 
----@class cbox: ihandle
+---@class cbox: ihGUI
 local cbox = {}
 
----@class gridbox: ihandle
+---@class gridbox: ihGUI
 local gridbox = {}
 
----@class multibox: ihandle
+---@class multibox: ihGUI
 local multibox = {}
 
----@class hbox: ihandle
+---@class hbox: ihGUI
 local hbox = {}
 
----@class vbox: ihandle
+---@class vbox: ihGUI
 local vbox = {}
 
----@class zbox: ihandle
+---@class zbox: ihGUI
 local zbox = {}
 
----@class radio: ihandle
+---@class radio: ihGUI
 local radio = {}
 
----@class normalizer: ihandle
+---@class normalizer: ihGUI
 local normalizer = {}
 
----@class frame: ihandle
+---@class frame: ihGUI
 local frame = {}
 
----@class flatframe: ihandle
+---@class flatframe: ihGUI
 local flatframe = {}
 
----@class tabs: ihandle
+---@class tabs: ihGUI
 local tabs = {}
 
----@class flattabs: ihandle
+---@class flattabs: ihGUI
 local flattabs = {}
 
----@class backgroundbox: ihandle
+---@class backgroundbox: ihGUI
 local backgroundbox = {}
 
----@class scrollbox: ihandle
+---@class scrollbox: ihGUI
 local scrollbox = {}
 
----@class flatscrollbox: ihandle
+---@class flatscrollbox: ihGUI
 local flatscrollbox = {}
 
----@class detachbox: ihandle
+---@class detachbox: ihGUI
 local detachbox = {}
 
----@class expander: ihandle
+---@class expander: ihGUI
 local expander = {}
 
----@class sbox: ihandle
+---@class sbox: ihGUI
 local sbox = {}
 
----@class split: ihandle
+---@class split: ihGUI
 local split = {}
 
 
@@ -744,7 +836,7 @@ function iup.split(ihandlesplit) end
 
 -- Controls Standart classes start
 
----@class animatedlabel: ihandle
+---@class animatedlabel: ihGUI
 local animatedlabel = {}
 animatedlabel.button_cb = button_cb
 animatedlabel.motion_cb = motion_cb
@@ -755,14 +847,14 @@ animatedlabel.destroy_cb = destroy_cb
 animatedlabel.enterwindow_cb = enterwindow_cb
 animatedlabel.leavewindow_cb = leavewindow_cb
 
----@class button: ihandle
+---@class button: ihGUI
 local button = {}
 ---Action generated when any mouse button is pressed and when it is released. Both calls occur before the ACTION callback when button 1 is being used.
----@param self ihandle
+---@param self ihGUI
 ---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processed.
 button.action = function (self) end
 ---Action generated when the button 1 (usually left) is selected. This callback is called only after the mouse is released and when it is released inside the button area.
----@param self ihandle
+---@param self ihGUI
 ---@param button `iup.BUTTON1`|`iup.BUTTON2`|`iup.BUTTON3` -- LBM|MBM|RBM
 ---@param pressed `0`|`1` -- 0 -- released; 1 -- pressed
 ---@param x integer -- position in the canvas where the event has occurred, in pixels.
@@ -780,10 +872,10 @@ button.leavewindow_cb = leavewindow_cb
 button.k_any = k_any
 button.help_cb = help_cb
 
----@class flatbutton: ihandle, canvas, button
+---@class flatbutton: ihGUI, canvas, button
 local flatbutton = {}
 ---Called after the value was interactively changed by the user. Called only when TOGGLE=Yes. Called after the ACTION callback, but under the same context.
----@param self ihandle
+---@param self ihGUI
 ---@return integer|`iup.DEFAULT`
 ---
 ---
@@ -808,11 +900,11 @@ local flatbutton = {}
 ---When the IupFlatButton displays only a text it will look like a label, use SHOWBORDER=Yes to force the display of the borders all the time.
 flatbutton.valuechanged_cb = function (self) end
 
----@class dropbutton: ihandle, canvas, button
+---@class dropbutton: ihGUI, canvas, button
 local dropbutton = {}
 -- TODO:
 
----@class calendar: ihandle
+---@class calendar: ihGUI
 ---@field today string
 ---@field value string
 ---@field weeknumbers "NO"|"YES" -- default "NO"
@@ -828,10 +920,10 @@ calendar.leavewindow_cb = leavewindow_cb
 calendar.k_any = k_any
 calendar.help_cb = help_cb
 
----@class canvas: ihandle, ihDragNDrop
+---@class canvas: ihGUI, ihDragNDrop
 local canvas = {}
 ---Action generated when the canvas needs to be redrawn.
----@param self ihandle
+---@param self ihGUI
 ---@param posx number  -- humb position in the horizontal scrollbar. The POSX attribute value. Old parameter in float format, use POSX attribute to get the value in double format
 ---@param posy number  -- thumb position in the vertical scrollbar. The POSY attribute value. Old parameter in float format, use POSX attribute to get the value in double format
 ---@return integer
@@ -839,7 +931,7 @@ canvas.action = function (self, posx, posy) end
 canvas.button_cb = button_cb
 canvas.dropfiles_cb = dropfiles_cb
 ---Called when the canvas gets or looses the focus. It is called after the common callbacks GETFOCUS_CB and KILL_FOCUS_CB.
----@param self ihandle
+---@param self ihGUI
 ---@param focus integer -- is non zero if the canvas is getting the focus, is zero if it is loosing the focus
 ---@return integer
 canvas.focus_cb = function (self, focus) end
@@ -861,7 +953,7 @@ canvas.leavewindow_cb = leavewindow_cb
 canvas.k_any = k_any
 canvas.help_cb = help_cb
 
----@class colorbar: ihandle
+---@class colorbar: ihGUI
 local colorbar = {}
 colorbar.cell_cb = cell_cb
 colorbar.extended_cb = extended_cb
@@ -877,12 +969,12 @@ colorbar.leavewindow_cb = leavewindow_cb
 colorbar.k_any = k_any
 colorbar.help_cb = help_cb
 
----@class colorbrowser: ihandle
+---@class colorbrowser: ihGUI
 local colorbrowser = {}
 colorbrowser.change_cb = change_cb
 colorbrowser.drag_cb = drag_cb
 ---Called after the value was interactively changed by the user. It is called whenever a CHANGE_CB or a DRAG_CB would also be called, it is just  called after them. (since 3.0)
----@param self ihandle
+---@param self ihGUI
 ---@return integer
 colorbrowser.valuechanged_cb =  function (self) end
 colorbrowser.map_cb = map_cb
@@ -895,7 +987,7 @@ colorbrowser.leavewindow_cb = leavewindow_cb
 colorbrowser.k_any = k_any
 colorbrowser.help_cb = help_cb
 
----@class datepick: ihandle
+---@class datepick: ihGUI
 local datepick = {}
 datepick.valuechanged_cb = valuechanged_cb
 datepick.map_cb = map_cb
@@ -908,13 +1000,13 @@ datepick.leavewindow_cb = leavewindow_cb
 datepick.k_any = k_any
 datepick.help_cb = help_cb
 
----@class dial: ihandle
+---@class dial: ihGUI
 local dial = {}
 dial.button_press_cb = button_press_cb
 dial.button_release_cb = button_release_cb
 dial.mousemove_cb = mousemove_cb
 ---Called after the value was interactively changed by the user. It is called whenever a BUTTON_PRESS_CB, a BUTTON_RELEASE_CB or a MOUSEMOVE_CB would also be called, but if defined those callbacks will not be called. (since 3.0)
----@param self ihandle
+---@param self ihGUI
 ---@return integer
 dial.valuechanged_cb = function (self) end
 dial.map_cb = map_cb
@@ -927,13 +1019,13 @@ dial.leavewindow_cb = leavewindow_cb
 dial.k_any = k_any
 dial.help_cb = help_cb
 
----@class gauge: ihandle
+---@class gauge: ihGUI
 local gauge = {}
 gauge.map_cb = map_cb
 gauge.unmap_cb = unmap_cb
 gauge.destroy_cb = destroy_cb
 
----@class label: ihandle
+---@class label: ihGUI
 local label = {}
 label.button_cb = button_cb
 label.motion_cb = motion_cb
@@ -944,7 +1036,7 @@ label.destroy_cb = destroy_cb
 label.enterwindow_cb = enterwindow_cb
 label.leavewindow_cb = leavewindow_cb
 
----@class flatlabel: ihandle
+---@class flatlabel: ihGUI
 local flatlabel = {}
 --TODO: iupcnavas callbacks write
 flatlabel.button_cb = button_cb
@@ -956,22 +1048,22 @@ flatlabel.destroy_cb = destroy_cb
 flatlabel.enterwindow_cb = enterwindow_cb
 flatlabel.leavewindow_cb = leavewindow_cb
 
----@class flatseparator: ihandle
+---@class flatseparator: ihGUI
 local flatseparator = {}
 --TODO: iupcnavas callbacks write
 
----@class link: ihandle
+---@class link: ihGUI
 local link = {}
 ---Action generated when the link is activated.
----@param self ihandle
+---@param self ihGUI
 ---@param url string -- The destination address of the link
 ---@return `iup.CLOSE`|`iup.DEFAULT` -- `iup.CLOSE` will be processed. If returns `iup.DEFAULT` or it is not defined, the IupHelp function will be called
 link.action = function (self, url) end
 
----@class list: ihandle
+---@class list: ihGUI
 local list = {}
 ---Action generated when the link is activated.
----@param self ihandle
+---@param self ihGUI
 ---@param text string -- Text of the changed item
 ---@param item integer -- Number of the changed item starting at `1`
 ---@param state 1|0 -- Equal to `1` if the option was selected or to `0` if the option was deselected
@@ -979,7 +1071,7 @@ local list = {}
 list.action = function (self, text, item, state) end
 
 ---Action generated when any mouse button is pressed or released inside the list. Called only when DROPDOWN=NO. If the list has an editbox the message is called when cursor is at the listbox only (ignored at the editbox). Use IupConvertXYToPos to convert (x,y) coordinates in item position. (since 3.0)
----@param self ihandle
+---@param self ihGUI
 ---@param button `iup.BUTTON1`|`iup.BUTTON2`|`iup.BUTTON3` -- LBM|MBM|RBM
 ---@param pressed 0|1 -- `0` -- released; `1` -- pressed
 ---@param x integer -- position in the canvas where the event has occurred, in pixels.
@@ -1002,7 +1094,7 @@ list.dropdown_cb = dropdown_cb
 list.dropfiles_cb = dropfiles_cb
 list.edit_cb = edit_cb
 ---Action generated when the mouse is moved over the list. Called only when DROPDOWN=NO. If the list has an editbox the message is called when cursor is at the listbox only (ignored at the editbox). Use IupConvertXYToPos to convert (x,y) coordinates in item position. (since 3.0)
----@param self ihandle
+---@param self ihGUI
 ---@param x integer -- position in the canvas where the event has occurred, in pixels.
 ---@param y integer -- position in the canvas where the event has occurred, in pixels.
 ---@param status string -- status of the mouse buttons and some keyboard keys at the moment the event is generated. The following macros must be used for verification: iup.isshift(status), iup.iscontrol(status), iup.isbutton1(status), iup.isbutton2(status), iup.isbutton3(status), iup.isbutton4(status), iup.isbutton5(status), iup.isdouble(status), iup.isalt(status), iup.issys(status)
@@ -1023,24 +1115,24 @@ list.k_any = k_any
 list.help_cb = help_cb
 --TODO: drag&drop atrributes all
 
----@class flatlist: ihandle
+---@class flatlist: ihGUI
 local flatlist = {}
 --TODO:
 
----@class progressbar: ihandle
+---@class progressbar: ihGUI
 local progressbar = {}
 progressbar.map_cb = map_cb
 progressbar.unmap_cb = unmap_cb
 progressbar.destroy_cb = destroy_cb
 
----@class spin: ihandle
+---@class spin: ihGUI
 local spin = {}
 spin.spin_cb = spin_cb
 
----@class text: ihandle
+---@class text: ihGUI
 local text = {}
 ---Action generated when the text is edited, but before its value is actually changed. Can be generated when using the keyboard, undo system or from the clipboard.
----@param self ihandle
+---@param self ihGUI
 ---@param c integer        -- valid alpha numeric character or `0`
 ---@param new_value string -- Represents the new text value
 ---@return integer|`iup.DEFAULT`|`iup.CLOSE`|`iup.IGNORE` -- IUP_CLOSE will be processed, but the change will be ignored. If IUP_IGNORE, the system will ignore the new value. If c is valid and returns a valid alpha numeric character, this new character will be used instead. The VALUE attribute can be changed only if IUP_IGNORE is returned
@@ -1050,7 +1142,7 @@ text.caret_cb = caret_cb
 text.dropfiles_cb = dropfiles_cb
 text.motion_cb = motion_cb
 ---Action generated when a spin button is pressed. Valid only when SPIN=YES. When this callback is called the ACTION callback is not called. The VALUE attribute can be changed during this callback only if SPINAUTO=NO. (since 3.0)
----@param self ihandle
+---@param self ihGUI
 ---@param pos integer -- the value of the spin (after it was incremented)
 ---@return integer|`iup.DEFAULT`|`iup.IGNORE` -- `iup.IGNORE` is processed in Windows and Motif
 text.spin_cb = function (self, pos) end
@@ -1066,10 +1158,10 @@ text.k_any = k_any
 text.help_cb = help_cb
 -- TODO: drag&drop
 
----@class toggle: ihandle
+---@class toggle: ihGUI
 local toggle = {}
 ---Action generated when the toggle's state (on/off) was changed. The callback also receives the toggle's state.
----@param self ihandle
+---@param self ihGUI
 ---@param state integer -- `1` if the toggle's state was shifted to on; `0` if it was shifted to off
 ---@return integer|`iup.CLOSE`|`iup.DEFAULT` -- IUP_CLOSE will be processed
 toggle.action = function (self, state) end
@@ -1084,11 +1176,11 @@ toggle.leavewindow_cb = leavewindow_cb
 toggle.k_any = k_any
 toggle.help_cb = help_cb
 
----@class flattoggle: ihandle
+---@class flattoggle: ihGUI
 local flattoggle = {}
 -- TODO: canvas
 
----@class tree: ihandle
+---@class tree: ihGUI
 local tree = {}
 -- TODO:
 tree.button_cb = button_cb
@@ -1104,11 +1196,11 @@ tree.leavewindow_cb = leavewindow_cb
 tree.k_any = k_any
 tree.help_cb = help_cb
 
----@class flattree: ihandle
+---@class flattree: ihGUI
 local flattree = {}
 -- TODO: canvas
 
----@class val: ihandle
+---@class val: ihGUI
 local val = {}
 val.valuechanged_cb = valuechanged_cb
 val.map_cb = map_cb
@@ -1121,7 +1213,7 @@ val.leavewindow_cb = leavewindow_cb
 val.k_any = k_any
 val.help_cb = help_cb
 
----@class flatval: ihandle
+---@class flatval: ihGUI
 local flatval = {}
 -- TODO: canvas
 flatval.valuechanged_cb = valuechanged_cb
@@ -1135,47 +1227,47 @@ flatval.leavewindow_cb = leavewindow_cb
 flatval.k_any = k_any
 flatval.help_cb = help_cb
 
----@class cells: ihandle
+---@class cells: ihGUI
 local cells = {}
 -- TODO:
 
----@class matrix: ihandle
+---@class matrix: ihGUI
 local matrix = {}
 -- TODO:
 
----@class matrixex: ihandle
+---@class matrixex: ihGUI
 local matrixex = {}
 -- TODO:
 
----@class matrixlist: ihandle
+---@class matrixlist: ihGUI
 local matrixlist = {}
 -- TODO:
 
----@class glcanvas: ihandle
+---@class glcanvas: ihGUI
 local glcanvas = {}
 -- TODO:
 
----@class glbackgroundbox: ihandle
+---@class glbackgroundbox: ihGUI
 local glbackgroundbox = {}
 -- TODO:
 
----@class glcontrols: ihandle
+---@class glcontrols: ihGUI
 local glcontrols = {}
 -- TODO:
 
----@class plot: ihandle
+---@class plot: ihGUI
 local plot = {}
 -- TODO:
 
----@class olecontrol: ihandle
+---@class olecontrol: ihGUI
 local olecontrol = {}
 -- TODO:
 
----@class scintilla: ihandle
+---@class scintilla: ihGUI
 local scintilla = {}
 -- TODO:
 
----@class webbrowser: ihandle
+---@class webbrowser: ihGUI
 local webbrowser = {}
 -- TODO:
 
@@ -1352,6 +1444,193 @@ function iup.webbrowser(ihandlewebbrowser) end
 
 -- Controls Standart functions end
 
+-- Ihandle functions start
+
+---Destroys an interface element and all its children. Only dialogs, timers, popup menus and images should be normally destroyed, but detached controls can also be destroyed.
+---@param ih ihandle
+---
+---It will automatically unmap and detach the element if necessary, and then destroy the element.
+---
+---This function also deletes the main names associated to the interface element being destroyed, but if it has more than one name then some names may be left behind.
+---
+---Menu bars associated with dialogs are automatically destroyed when the dialog is destroyed.
+---
+---Images associated with controls are NOT automatically destroyed, because images can be reused in several controls the application must destroy them when they are not used anymore.
+---
+---All dialogs and all elements that have names are automatically destroyed in `iup.Close()`.
+function iup.Destroy(ih) end
+
+---Unmap the element from the native system. It will also unmap all its children.
+---
+---It will NOT detach the element from its parent, and it will NOT destroy the IUP element.
+---@param ih ihandle
+---
+---When the element is mapped some attributes are stored only in the native system. If the element is unmaped those attributes are lost. Use the function IupSaveClassAttributes when you want to unmap the element and keep its attributes.
+---
+---The `unmap_cb` callback is called before the element is actually unmapped from the native system.
+function iup.Unmap(ih) end
+
+---Inserts an interface element at the end of the container, after the last element of the container. Valid for any element that contains other elements like dialog, frame, hbox, vbox, zbox or menu.
+---@param ih ihandle -- Identifier of a container like hbox, vbox, zbox and menu
+---@param new_child ihandle -- Identifier of the element to be inserted
+---@return ihandle parent -- The actual parent if the interface element was successfully inserted. Otherwise returns `nil`. Notice that the desired parent can contains a set of elements and containers where the child will be actually attached so the function returns the actual parent of the element
+---
+---This function can be used when elements that will compose a container are not known a priori and should be dynamically constructed.
+---
+---The new child can NOT be mapped. It will NOT map the new child into the native system. If the parent is already mapped you must explicitly call IupMap for the appended child.
+---
+---If the actual parent is a layout box (IupVbox, IupHbox or IupZbox) and you try to append a child that it is already at the parent child list, then the child is moved to the last child position.
+---
+---The elements are NOT immediately repositioned. Call IupRefresh for the container (or any other element in the dialog) to update the dialog layout.
+function iup.Append(ih, new_child) end
+
+---Detaches an interface element from its parent.
+---@param child ihandle
+---
+---It will automatically call IupUnmap to unmap the element if necessary, and then detach the element.
+---
+---If left detached it is still necessary to call IupDestroy to destroy the IUP element.
+---
+---The elements are NOT immediately repositioned. Call IupRefresh for the container (or any other element in the dialog) to update the dialog layout.
+---
+---When the element is mapped some attributes are stored only in the native system. If the element is unmaped those attributes are lost. Use the function IupSaveClassAttributes when you want to unmap the element and keep its attributes.
+function iup.Detach(child) end
+
+---Inserts an interface element before another child of the container. Valid for any element that contains other elements like dialog, frame, hbox, vbox, zbox, menu, etc.
+---@param ih ihandle -- Identifier of a container like hbox, vbox, zbox and menu
+---@param reg_child ihandle|nil -- Identifier of the element to be used as reference. Can be nil to insert as the first element
+---@param new_child ihandle -- Identifier of the element to be inserted before the reference
+---@return ihandle|nil parent -- the actual parent if the interface element was successfully inserted. Otherwise returns nil. Notice that the desired parent can contains a set of elements and containers where the child will be actually attached so the function returns the actual parent of the element
+---
+---This function can be used when elements that will compose a container are not known a priori and should be dynamically constructed.
+---
+---The new child can NOT be mapped. It will NOT map the new child into the native system. If the parent is already mapped you must explicitly call `iup.Map()` for the appended child.
+---
+---If the actual parent is a layout box (`vbox`, `hbox` or `zbox`) and you try to insert a child that it is already at the parent child list, then the child is moved to the insert position.
+---
+---The elements are NOT immediately repositioned. Call `iup.Refresh()` for the container* to update the dialog layout (* or any other element in the dialog).
+function iup.Insert(ih, reg_child, new_child) end
+
+---Moves an interface element from one position in the hierarchy tree to another.
+---
+---Both new_parent and child must be mapped or unmapped at the same time.
+---
+---If `ref_child` is `nil`, then it will append the child to the `new_parent`. If `ref_child` is `not nil` then it will insert `child` before `ref_child` inside the `new_parent`.
+---@param child ihandle -- Identifier of the element to be moved
+---@param new_parent ihandle -- Identifier of the new parent
+---@param ref_child ihandle|nil -- Identifier of the element to be used as reference, where the child will be inserted before it. (since 3.3)
+---@return `iup.NOERROR`|`iup.ERROR`
+---
+---This function is faster and easier than doing the sequence unmap, detach, append/insert and map.
+---
+---The elements are NOT immediately repositioned. Call IupRefresh for the container (or any other element in the dialog) to update the dialog layout.
+---
+---Motif does not support the re-parent function, but we simulate a re-parent doing a unmap/map sequence. But some attributes may be lost during the operation, mostly attributes that are id dependent.
+function iup.Reparent(child, new_parent, ref_child) end
+
+---Updates the size and layout of all controls in the same dialog.
+---
+---To be used after changing size attributes, or attributes that affect the size of the control. Can be used for any element inside a dialog, but the layout of the dialog and all controls will be updated. It can change the layout of all the controls inside the dialog because of the dynamic layout positioning.
+---@param ih ihandle -- Identifier of the interface element
+---
+---Can be used for any control, but it will always affect the whole dialog. Can be called even if the dialog is not mapped.
+---
+---To refresh the layout of only a subset of the dialog use IupRefreshChildren.
+---
+---After the layout is computed, the position and size attributes are all updated. If the elements are mapped then they are immediately repositioned, if the dialog is visible then the change will be immediately reflected on the display.
+---
+---This function will NOT change the size of the dialog, except if the SIZE or RASTERSIZE attributes of the dialog where changed before the call. For instance, if you also want to change the size of the dialog then you can do:
+---`dialog.size = "..."
+---iup.Refresh(dialog)`
+---
+---So the dialog will be resized for the new User size, if the new size is NULL the dialog will be resized to the Natural size that include all the elements.
+---
+---Changing the size of elements without changing the dialog size may position some controls outside the dialog area at the left or bottom borders (the elements will be cropped at the dialog borders by the native system).
+---
+---IupMap also updates the dialog layout, but only when called for the dialog itself, even if the dialog is already mapped. Since IupShow, IupShowXY and IupPopup call IupMap, then they all will always update the dialog layout before showing it, even also if the dialog is already visible.
+function iup.Refresh(ih) end
+
+---Updates the size and layout of controls after changing size attributes, or attributes that affect the size of the control. Can be used for any element inside a dialog, only its children will be updated. It can change the layout of all the controls inside the given element because of the dynamic layout positioning.
+---@param ih ihandle
+---
+---The given element must be a container. It must be inside a dialog hierarchy. It can NOT be a dialog, for dialogs use IupRefresh.
+---
+---The children are immediately repositioned, if the dialog is visible then the change will be immediately reflected on the display.
+---
+---This function will NOT change the size of the given element, even if the natural size of its children would increase its natural size.
+---
+---If your dialog has too many controls and you want to hide or destroy some, then add some other in the same place, so you actually know that the dialog layout would not change, this is a much faster function than IupRefresh.
+function iup.RefreshChildren(ih) end
+
+---Returns the parent of a control.
+---@param ih ihandle
+---@return ihandle|nil parent
+function iup.GetParent(ih) end
+
+---Returns the a child of the control given its position.
+---@param ih ihandle
+---@param pos integer -- Position of the desire child starting at `0`
+---@return ihandle|nil child
+---
+---This function will return the children of the control in the exact same order in which they were assigned.
+function iup.GetChild(ih, pos) end
+
+---Returns the position of a child of the given control.
+---@param ih ihandle
+---@param child ihandle
+---@return integer|-1 pos -- the position of the desire child starting at `0`, or `-1` if child not found
+---
+---This function will return the children of the control in the exact same order in which they were assigned.
+function iup.GetChildPos(ih, child) end
+
+---Returns the number of children of the given control.
+---@param ih ihandle
+---@return integer count
+function iup.GetChildCount(ih) end
+
+---Returns the a child of the given control given its brother.
+---@param ih ihandle|nil -- identifier of the interface element. Can be NULL if child not NULL
+---@param child ihandle|nil -- Identifier of the child brother to be used as reference. To get the first child use `nil`
+---@return ihandle|nil next_child
+---
+---This function will return the children of the control in the exact same order in which they were assigned. If child in not `nil` then it returns exactly the same result as `iup.GetBrother`.
+function iup.GetNextChild(ih, child) end
+
+---Returns the brother of an element.
+---@param ih ihandle
+---@return ihandle|nil brother
+function iup.GetBrother(ih) end
+
+---Returns the handle of the dialog that contains that interface element. Works also for children of a menu that is associated with a dialog.
+---@param ih ihandle
+---@return ihandle|nil dialog
+function iup.GetDialog(ih) end
+
+---Returns the identifier of the child element that has the NAME attribute equals to the given value on the same dialog hierarchy. Works also for children of a menu that is associated with a dialog.
+---@param ih ihandle -- Identifier of an interface element that belongs to the hierarchy
+---@param name string -- Name of the control to be found
+---@return ihandle|nil child
+---
+---This function will only found the child if the NAME attribute is set at the control.
+---
+---Before the dialog is mapped the function searches the hierarchy, even if the hierarchy does not belongs to a dialog yet, but after the child is mapped the result is immediate (the hierarchy is not searched).
+function iup.GetDialogChild(ih, name) end
+
+---Mark the element or its children to be redraw when the control returns to the system.
+---@param ih ihandle
+function iup.Update(ih) end
+
+---Mark the element or its children to be redraw when the control returns to the system.
+---@param ih ihandle
+function iup.UpdateChildren(ih) end
+
+---Force the element and its children to be redrawn immediately.
+---@param ih ihandle
+---@param children 0|1 -- flag to update its children
+function iup.Redraw(ih, children) end
+
+-- Ihandle functions end
+
 -- Utility functions start
 
 ---@return string -- version
@@ -1464,6 +1743,7 @@ function iup.StringCompare(str1, str2, casesensitive, lexicographic) end
 ---@field wid string|"-1" -- (read-only): Returns the native serial number of the timer. Returns `-1` if not running. A timer is mapped only when it is running
 -- TODO: timer doesn't have expand field
 local timer = {}
+
 ---@param self ihandle
 ---@return `iup.DEFAULT`|`iup.CLOSE` -- IUP_CLOSE will be processed
 timer.action_cb = function (self) end
