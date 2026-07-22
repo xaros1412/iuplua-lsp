@@ -21,79 +21,6 @@ local fontAttributes = {}
 ---@class standartAttributes
 local standartAttributes = {}
 
----Allows the element to expand, fulfilling empty spaces inside its container.
----
----`"YES"` (both directions), `"HORIZONTAL"`, `"VERTICAL"`, `"HORIZONTALFREE"`, `"VERTICALFREE"` or `"NO"`.
----
----Default: `"NO"`. For containers the default is `"YES"`.
----
----It is a non inheritable attribute, but a container inherit its parents EXPAND attribute. In other words, although EXPAND is non inheritable, it is inheritable for containers. So if you set it at a container it will not affect its children, except for those who are containers.
----
----The expansion is done equally for all expandable elements in the same container.
----
----For a container, the actual EXPAND value will be always a combination of its own value and the value of its children. In the sense that a container can only expand if its children can expand too in the same direction.
----
----The HORIZONTALFREE and VERTICALFREE values will not behave as normal expansion. These values will NOT affect the expansion of the container when set at its children, the children will simply expand to the available free space at the container. (Since 3.11)
-standartAttributes.expand = "NO"
-
----Specifies the element User size, and returns the Current size, in units proportional to the size of a character.
----
----"width`x`height", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in characters fraction unit (see Notes below).
----
----You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 0. For example: "x40" (height only = "0x40") or "40x" (width only = "40x0").
----
----When this attribute is consulted the Current size of the control is returned. If both values are 0 then nil is returned.
----
----The size units observes the following heuristics:
----
----Width in 1/4's of the average width of a character for the current FONT of each control.
----Height in 1/8's of the average height of a character for the current FONT of each control.
----So, a SIZE="4x8" means 1 character width and 1 character height.
----
----Notice that this is the average character size, the space occupied by a specific string is always different than its number of character times its average character size, except when using a monospaced font like Courier. Usually for common strings this size is smaller than the actual size, so it is a good practice to leave more room than expected if you use the SIZE attribute. For smaller font sizes this difference is more noticeable than for larger font sizes.
----
----When this attribute is changed, the RASTERSIZE attribute is automatically updated.
----
----SIZE depends on FONT, so when FONT is changed and SIZE is set, then RASTERSIZE is also updated.
----
----The average character size of the current FONT can be obtained from the CHARSIZE attribute.
----
----To obtain the last computed Natural size of the element in pixels, use the read-only attribute NATURALSIZE. (Since 3.6)
----
----To obtain the User size of the element in pixels after it is mapped, use the attribute USERSIZE. (Since 3.12)
---------------------------------------------------------------------------------------------------------------
----A User size of "0x0" can be set, it can also be set using NULL. If both values are 0 then NULL is returned.
----
----If you wish to use the User size only as an initial size, change this attribute to NULL after the control is mapped, the returned size in IupGetAttribute will still be the Current size.
----
----The element is NOT immediately repositioned. Call IupRefresh to update the dialog layout.
----
----IupMap also updates the dialog layout even if it is already mapped, so calling it or calling IupShow, IupShowXY or IupPopup (they all call IupMap) will also update the dialog layout.
-standartAttributes.size = "0x0"
-
----Specifies the element User size, and returns the Current size, in pixels.
----
----"widthxheight", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in pixels.
----
----You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 0. For example: "x40" (height only = "0x40") or "40x" (width only = "40x0").
----
----When this attribute is consulted the Current size of the control is returned. If both values are 0 then NULL is returned.
----
----When this attribute is set, it resets the SIZE attribute. So changes to the FONT attribute will not affect the User size of the element.
----
----To obtain the last computed Natural size of the control in pixels, use the read-only attribute NATURALSIZE. (Since 3.6)
----
----To obtain the User size of the element in pixels after it is mapped, use the attribute USERSIZE. (Since 3.12)
-------
----A User size of "0x0" can be set, it can also be set using NULL. If both values are 0 then NULL is returned.
----
----If you wish to use the User size only as an initial size, change this attribute to NULL after the control is mapped, the returned size in IupGetAttribute will still be the Current size.
----
----The element is NOT immediately repositioned. Call IupRefresh to update the dialog layout.
----
----IupMap also updates the dialog layout even if it is already mapped, so calling it or calling IupShow, IupShowXY or IupPopup (they all call IupMap) will also update the dialog layout.
-standartAttributes.rastersize = "0x0"
-
 ---The position of the element relative to the origin of the Client area of the native parent. If you add the CLIENTOFFSET attribute of the native parent, you can obtain the coordinates relative to the Window area of the native parent. See the Layout Guide.
 ---
 ---"x`,`y", where x and y are integer values corresponding to the horizontal and vertical position, respectively, in pixels.
@@ -117,6 +44,8 @@ standartAttributes.postion = "x,y"
 ---If the element can be expanded, then its empty space will NOT be occupied by other controls although its size will be limited.
 ---
 ---In the IupDialog will also limit the interactive resize of the dialog.
+---
+---See the Layout Guide for mode details on sizes.
 standartAttributes.minsize = "0x0"
 
 ---Specifies the element maximum size in pixels during the layout process.
@@ -126,12 +55,6 @@ standartAttributes.minsize = "0x0"
 ---You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 65535. For example: "x40" (height only = "65535x40") or "40x" (width only = "40x65535").
 ---
 ---Default: `"65535x65535"`
----
----The limits are applied during the layout computation. It will limit the Natural size and the Current size.
----
----If the element can be expanded, then its empty space will NOT be occupied by other controls although its size will be limited.
----
----In the IupDialog will also limit the interactive resize of the dialog.
 standartAttributes.maxsize = "65535x65535"
 
 ---Applies a set of attributes to a control. The THEME attribute in inheritable.
@@ -163,131 +86,6 @@ standartAttributes.theme = ""
 ---
 ---The global attribute DEFAULTTHEME can be applied to all elements during creation.
 standartAttributes.ntheme = ""
-
---- [(read-only)]: returns -1 if mapped
-standartAttributes.wid = "-1"
-
----@class containerAttributes
-local containerAttributes = {}
-
----[(read-only*) (non inheritable) (since 3.0)]
----Returns the client area size of a container. It is the space available for positioning and sizing children. It is the container Current size excluding the decorations (if any).
----
----Value:
----"widthxheight", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in pixels. If both values are 0 then "0x0" is returned.
----
----Notes:
----(*) For IupDialog is NOT read-only, and it will re-define RASTERSIZE by adding the decorations to the given Client size. (Since 3.3)
----
----For IupHbox, IupVbox and IupGridBox it consider the MARGIN attribute as a decoration.
----
----For IupSplit returns the total area available for the two children.
----@type string
-containerAttributes.clientsize = nil
-
----[(read-only) (non inheritable) (since 3.3)]
----Returns the native container internal offset to the Client area, see the Layout Guide. Useful for IupFrame, IupTabs and IupDialog that have decorations. Can also be consulted in other containers, it will simply return "0x0".
----
----This attribute can be used in conjunction with the POSITION attribute of a child so the coordinates of a child relative to the native parent top-left corner can be obtained.
----
----Value:
----"dxxdy", where dx and dy are integer values corresponding to the horizontal and vertical offsets, respectively, in pixels.
----
----Notes:
----In GTK and Motif, for the IupDialog, the dy value is negative when there is a menu. This occurs because in those systems the menu is placed inside the Client Area and all children must be placed below the menu. In Windows it will return 0x0, except when CUSTOMFRAMEDRAW is used.
----
----In Windows, for the IupFrame, the value is always "0x0" the position of the child is still relative to the top-left corner of the frame. This is automatically compensated in calculation of the POSITION attribute.
-containerAttributes.clientoffset = nil
-
----@class visualAttributes
-local visualAttributes = {}
-
----[(read-only) (non inheritable) (since 3.4)]
----Returns the absolute horizontal and/or vertical position of the top-left corner of the client area relative to the origin of the main screen in pixels. It is similar to POSITION but relative to the origin of the main screen, instead of the origin of the client area. The origin of the main screen is at the top-left corner, in Windows it is affected by the position of the Start Menu when it is at the top or left side of the screen.
----IMPORTANT: For the dialog, it is the position of the top-left corner of the window, NOT the client area. It is the same position used in IupShowXY and IupPopup. In GTK, if the dialog is hidden the values can be outdated.
----@type string
-visualAttributes.screenposition = "x,y"
-
----[(read-only) (non inheritable) (since 3.4)]
----Returns the absolute horizontal and/or vertical position of the top-left corner of the client area relative to the origin of the main screen in pixels. It is similar to POSITION but relative to the origin of the main screen, instead of the origin of the client area. The origin of the main screen is at the top-left corner, in Windows it is affected by the position of the Start Menu when it is at the top or left side of the screen.
----IMPORTANT: For the dialog, it is the position of the top-left corner of the window, NOT the client area. It is the same position used in IupShowXY and IupPopup. In GTK, if the dialog is hidden the values can be outdated.
----@type string
-visualAttributes.screenpositionx = "x"
-
----[(read-only) (non inheritable) (since 3.4)]
----Returns the absolute horizontal and/or vertical position of the top-left corner of the client area relative to the origin of the main screen in pixels. It is similar to POSITION but relative to the origin of the main screen, instead of the origin of the client area. The origin of the main screen is at the top-left corner, in Windows it is affected by the position of the Start Menu when it is at the top or left side of the screen.
----IMPORTANT: For the dialog, it is the position of the top-left corner of the window, NOT the client area. It is the same position used in IupShowXY and IupPopup. In GTK, if the dialog is hidden the values can be outdated.
----@type string
-visualAttributes.screenpositiony = "y"
-
----[(non inheritable)]
----Text to be shown when the mouse lies over the element.
----@type string
-visualAttributes.tip = nil
-
----[(non inheritable)]
----[Windows Only]: The tip window will have the appearance of a cartoon "balloon" with rounded corners and a stem pointing to the item. Default: NO.
----@type string
-visualAttributes.tipballoon = "NO"
-
----[(non inheritable)]
----[Windows Only]: When using the balloon format, the tip can also has a title in a separate area.
----@type string
-visualAttributes.tipballoontitle = nil
-
----[(non inheritable)]
----[Windows Only]: When using the balloon format, the tip can also has a pre-defined icon in the title area.
----Value:
----"0" - No icon (default)
----"1" - Info icon
----"2" - Warning icon
----"3" - Error Icon
----@type string|"0"|"1"|"2"|"3"
-visualAttributes.tipballoontitleicon = "0"
-
----[Windows and Motif Only]: The tip background color. Default: "255 255 225" (Light Yellow)
----@type string|"255 255 255"
-visualAttributes.tipbgcolor = "255 255 255"
-
----[Windows and Motif Only]: Time the tip will remain visible. Default: "5000". In Windows the maximum value is 32767 milliseconds.
----@type string|"5000"
-visualAttributes.tipdelay = "5000"
-
----[Windows and Motif Only]: The font for the tip text. If not defined the font used for the text is the same as the FONT attribute for the element. If the value is SYSTEM then, no font is selected and the default system font for the tip will be used.
----@type string
-visualAttributes.tipfont = nil
-
----[GTK only]: name of an image to be displayed in the TIP. See IupImage. (GTK 2.12)
----@type string
-visualAttributes.tipicon = nil
-
----[GTK only]: allows the tip string to contains Pango markup commands. Can be "YES" or "NO". Default: "NO". Must be set before setting the TIP attribute. (GTK 2.12)
----@type "YES"|"NO"
-visualAttributes.tipmarkup = "NO"
-
----(non inheritable): Specifies a rectangle inside the element where the tip will be activated. Format: "%d %d %d %d"="x1 y1 x2 y2". Default: all the element area. (GTK 2.12)
----@type string
-visualAttributes.tiprect = nil
-
----Shows or hides the tip under the mouse cursor. Use values "YES" or "NO". Returns the current visible state. (GTK 2.12) (since 3.5)
----@type "YES"|"NO"
-visualAttributes.tipvisible = nil
-
----Action before a tip is displayed.
----@param self ihandle
----@param x integer -- cursor position relative to the top-left corner of the element
----@param y integer -- cursor position relative to the top-left corner of the element
----@return `iup.DEFAULT`
-visualAttributes.tips_cb = function(self, x, y) end
-
----[(write-only) (non inheritable)]
----Change the ZORDER of a dialog or control. It is commonly used for dialogs, but it can be used to control the z-order of controls in a dialog.
----@type "TOP"|"BOTTOM"
-visualAttributes.zorder = nil
-
----Shows or hides the element.
----@type "YES"|"NO"
-visualAttributes.visible = "YES"
 
 -- Callbacks start
 
@@ -877,121 +675,71 @@ function dialog:hide() end
 -- Controls containers classes start
 
 
----Creates void element, which dynamically occupies empty spaces always trying to expand itself. Its parent should be an IupHbox, an IupVbox or a IupGridBox, or else this type of expansion will not work. If an EXPAND is set on at least one of the other children of the box, then the fill expansion is ignored.
----
----It does not have a native representation.
----@class fill: ihGUI, fontAttributes, standartAttributes
+---@class fill: ihGUI, fontAttributes
 ---@field expand string -- [(non inheritable)(read-only)]: If User size is not defined, then when inside a IupHbox/IupGridBox EXPAND is HORIZONTAL, when inside a IupVbox EXPAND is VERTICAL. If User size is defined then EXPAND is NO
 ---@field size string -- [(non inheritable)]: Defines the width, if inside a IupHbox, or the height, if it is inside a IupVbox. The standard format "wxh" can also be used, but width will be ignored if inside a IupVbox and height will be ignored if inside a IupHbox (since 3.3). When consulted behaves as the standard SIZE/RASTERSIZE attributes
 ---@field rastersize string -- [(non inheritable)]: Defines the width, if inside a IupHbox, or the height, if it is inside a IupVbox. The standard format "wxh" can also be used, but width will be ignored if inside a IupVbox and height will be ignored if inside a IupHbox (since 3.3). When consulted behaves as the standard SIZE/RASTERSIZE attributes
 ---@field wid string|"-1" -- [(read-only)]: returns -1 if mapped
 local fill = {}
 
----Creates void element, which occupies an empty space.
----
----It does not have a native representation.
----@class space: ihGUI, fontAttributes, standartAttributes
----@field wid string|"-1" -- [(read-only)]: returns -1 if mapped
+---@class space: ihGUI
 local space = {}
 
----Creates a void container for position elements in absolute coordinates. It is a concrete layout container.
----
----It does not have a native representation.
----
----The IupCbox is equivalent of a IupVbox or IupHbox where all the children have the FLOATING attribute set to YES, but children must use CX and CY attributes instead of the POSITION attribute.
----@class cbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class cbox: ihGUI
 local cbox = {}
 
----Creates a void container for composing elements in a regular grid. It is a box that arranges the elements it contains from top to bottom and from left to right, but can distribute the elements in lines or in columns.
----@class gridbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class gridbox: ihGUI
 local gridbox = {}
 
----Creates a void container for composing elements in a irregular grid. It is a box that arranges the elements it contains from top to bottom and from left to right, by distributing the elements in lines or in columns. But its EXPAND attribute does not behave as a regular container, instead it behaves as a regular element expanding into the available space.
----@class multibox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class multibox: ihGUI
 local multibox = {}
 
----Creates a void container for composing elements horizontally. It is a box that arranges the elements it contains from left to right.
----
----It does not have a native representation.
----@class hbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class hbox: ihGUI
 local hbox = {}
 
----Creates a void container for composing elements vertically. It is a box that arranges the elements it contains from top to bottom.
----
----It does not have a native representation.
----@class vbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class vbox: ihGUI
 local vbox = {}
 
----Creates a void container for composing elements in hidden layers with only one layer visible. It is a box that piles up the children it contains, only the one child is visible.
----
----It does not have a native representation.
----
----Zbox works by changing the VISIBLE attribute of its children, so if any of the grand children has its VISIBLE attribute directly defined then Zbox will NOT change its state.
----@class zbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class zbox: ihGUI
 local zbox = {}
 
----Creates a void container for grouping mutual exclusive toggles. Only one of its descendent toggles will be active at a time. The toggles can be at any composition.
----
----It does not have a native representation.
----@class radio: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class radio: ihGUI
 local radio = {}
 
----Creates a void container that does not affect the dialog layout. It acts by normalizing all the controls in a list so their natural size becomes the biggest natural size amongst them. All natural widths will be set to the biggest width, and all natural heights will be set to the biggest height. The controls of the list must be inside a valid container in the dialog.
 ---@class normalizer: ihGUI
 local normalizer = {}
 
----Creates a native container, which draws a frame with a title around its child.
----@class frame: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class frame: ihGUI
 local frame = {}
 
----Creates a native container, which draws a frame with a title around its child. The decorations are manually drawn. The control inherits from IupBackgroundBox.
----@class flatframe: ihGUI, backgroundbox
+---@class flatframe: ihGUI
 local flatframe = {}
 
----Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems.
----@class tabs: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class tabs: ihGUI
 local tabs = {}
 
----Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems. Identical to the IupTabs control but the decorations and buttons are manually drawn. It inherits from IupCanvas.
----@class flattabs: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
+---@class flattabs: ihGUI
 local flattabs = {}
 
----Creates a simple native container with no decorations. Useful for controlling children visibility for IupZbox or IupExpander. It inherits from IupCanvas.
----@class backgroundbox: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
+---@class backgroundbox: ihGUI
 local backgroundbox = {}
 
----Creates a native container that allows its child to be scrolled. It inherits from IupCanvas.
----@class scrollbox: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
+---@class scrollbox: ihGUI
 local scrollbox = {}
 
----Creates a native container that allows its child to be scrolled. It inherits from IupCanvas. The difference from IupScrollBox is that its scrollbars are drawn.
----@class flatscrollbox: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
+---@class flatscrollbox: ihGUI
 local flatscrollbox = {}
 
----Creates a detachable void container.
----
----Dragging and dropping this element, it creates a new dialog composed by its child or elements arranged in it (for example, a child like IupVbox or IupHbox). During the drag, the ESC key can be pressed to cancel the action.
----
----It does not have a native representation, but it contains also a IupCanvas to implement the bar handler.
----@class detachbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class detachbox: ihGUI
 local detachbox = {}
 
----Creates a void container that can interactively show or hide its child.
----
----It does not have a native representation, but it contains also several elements to implement the bar handler.
----@class expander: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class expander: ihGUI
 local expander = {}
 
----Creates a void container that allows its child to be resized. Allows expanding and contracting the child size in one direction.
----
----It does not have a native representation but it contains also a IupFlatSeparator to implement the bar handler.
----@class sbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class sbox: ihGUI
 local sbox = {}
 
----Creates a void container that split its client area in two. Allows the provided controls to be enclosed in a box that allows expanding and contracting the element size in one direction, but when one is expanded the other is contracted.
----
----It does not have a native representation, but it contains also a IupFlatSeparator to implement the bar handler.
----@class split: ihGUI, fontAttributes, standartAttributes, containerAttributes
+---@class split: ihGUI
 local split = {}
 
 
@@ -1000,164 +748,95 @@ local split = {}
 
 -- Controls containers functions start
 
----Creates void element, which dynamically occupies empty spaces always trying to expand itself. Its parent should be an IupHbox, an IupVbox or a IupGridBox, or else this type of expansion will not work. If an EXPAND is set on at least one of the other children of the box, then the fill expansion is ignored.
----
----It does not have a native representation.
----@param ihandlefill {[1]: nil}
+---@param ihandlefill {}
 ---@return fill
 function iup.fill(ihandlefill) end
 
----Creates void element, which occupies an empty space.
----
----It does not have a native representation.
----
----When an IupFill is inside a IupVbox or IupHbox it will affect the expansion of the box because it is always expandable. Even when you set its size to a given value, it will still affect the layout, because it is always marked as an expandable element.
----
----IupSpace will simply occupy a space in the layout. It does not have a natural size, it is 0x0 by default. It can be expandable or not, EXPAND will work as a regular element. The attributes SIZE and RASTERSIZE can be normally set.
----@param ihandlespace {[1]: nil}
+---@param ihandlespace {}
 ---@return space
 function iup.space(ihandlespace) end
 
----Creates a void container for position elements in absolute coordinates. It is a concrete layout container.
----
----It does not have a native representation.
----
----The IupCbox is equivalent of a IupVbox or IupHbox where all the children have the FLOATING attribute set to YES, but children must use CX and CY attributes instead of the POSITION attribute.
----
----
----CX, CY [(non inheritable) (at children only)]: Position in pixels of the child relative to the top-left corner of the box. Must be set for each child inside the box.
----
----The box can be created with no elements and be dynamic filled using IupAppend or IupInsert.
----@param ihandlecbox {[integer]: ihandle}
----@return cbox|nil
+---@param ihandlecbox {}
+---@return cbox
 function iup.cbox(ihandlecbox) end
 
----Creates a void container for composing elements in a regular grid. It is a box that arranges the elements it contains from top to bottom and from left to right, but can distribute the elements in lines or in columns.
----@param ihandlegridbox {[integer]: ihandle}
----@return gridbox|nil
+---@param ihandlegridbox {}
+---@return gridbox
 function iup.gridbox(ihandlegridbox) end
 
----@param ihandlemultibox {[integer]: ihandle} --  List of the identifiers that will be placed in the box.
----@return multibox|nil
+---@param ihandlemultibox {}
+---@return multibox
 function iup.multibox(ihandlemultibox) end
 
----Creates a void container for composing elements horizontally. It is a box that arranges the elements it contains from left to right.
----@param ihandlehbox {[integer]: ihandle}
----@return hbox|nil
+---@param ihandlehbox {}
+---@return hbox
 function iup.hbox(ihandlehbox) end
 
----Creates a void container for composing elements vertically. It is a box that arranges the elements it contains from top to bottom.
----@param ihandlevbox {[integer]: ihandle}
----@return vbox|nil
+---@param ihandlevbox {}
+---@return vbox
 function iup.vbox(ihandlevbox) end
 
----Creates a void container for composing elements in hidden layers with only one layer visible. It is a box that piles up the children it contains, only the one child is visible.
----
----It does not have a native representation.
----
----Zbox works by changing the VISIBLE attribute of its children, so if any of the grand children has its VISIBLE attribute directly defined then Zbox will NOT change its state.
----@param ihandlezbox {[integer]: ihandle}
----@return zbox|nil
+---@param ihandlezbox {}
+---@return zbox
 function iup.zbox(ihandlezbox) end
 
----Creates a void container for grouping mutual exclusive toggles. Only one of its descendent toggles will be active at a time. The toggles can be at any composition.
----
----It does not have a native representation.
----@param ihandleradio {[1]: ihandle|nil}
----@return radio|nil
+---@param ihandleradio {}
+---@return radio
 function iup.radio(ihandleradio) end
 
----Creates a void container that does not affect the dialog layout. It acts by normalizing all the controls in a list so their natural size becomes the biggest natural size amongst them. All natural widths will be set to the biggest width, and all natural heights will be set to the biggest height. The controls of the list must be inside a valid container in the dialog.
----@param ihandlenormalizer {[integer]: ihandle}
----@return normalizer|nil
+---@param ihandlenormalizer {}
+---@return normalizer
 function iup.normalizer(ihandlenormalizer) end
 
----Creates a native container, which draws a frame with a title around its child.
----@param ihandleframe {[1]: ihandle|nil}
----@return frame|nil
+---@param ihandleframe {}
+---@return frame
 function iup.frame(ihandleframe) end
 
----Creates a native container, which draws a frame with a title around its child. The decorations are manually drawn. The control inherits from IupBackgroundBox.
----@param ihandleflatframe {[1]: ihandle|nil}
----@return flatframe|nil
+---@param ihandleflatframe {}
+---@return flatframe
 function iup.flatframe(ihandleflatframe) end
 
----Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems.
----@param ihandletabs {[integer]: ihandle}
----@return tabs|nil
+---@param ihandletabs {}
+---@return tabs
 function iup.tabs(ihandletabs) end
 
----Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems. Identical to the IupTabs control but the decorations and buttons are manually drawn. It inherits from IupCanvas.
----@param ihandleflattabs {[integer]: ihandle}
----@return flattabs|nil
+---@param ihandleflattabs {}
+---@return flattabs
 function iup.flattabs(ihandleflattabs) end
 
----Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems. Identical to the IupTabs control but the decorations and buttons are manually drawn. It inherits from IupCanvas.
----@param ihandlebackgroundbox {[1]: ihandle|nil}
----@return backgroundbox|nil
+---@param ihandlebackgroundbox {}
+---@return backgroundbox
 function iup.backgroundbox(ihandlebackgroundbox) end
 
----Creates a native container that allows its child to be scrolled. It inherits from IupCanvas.
----@param ihandlescrollbox {[1]: ihandle|nil}
----@return scrollbox|nil
+---@param ihandlescrollbox {}
+---@return scrollbox
 function iup.scrollbox(ihandlescrollbox) end
 
----Creates a native container that allows its child to be scrolled. It inherits from IupCanvas. The difference from IupScrollBox is that its scrollbars are drawn.
----@param ihandleflatscrollbox {[1]: ihandle|nil}
----@return flatscrollbox|nil
+---@param ihandleflatscrollbox {}
+---@return flatscrollbox
 function iup.flatscrollbox(ihandleflatscrollbox) end
 
----Creates a detachable void container.
----
----Dragging and dropping this element, it creates a new dialog composed by its child or elements arranged in it (for example, a child like IupVbox or IupHbox). During the drag, the ESC key can be pressed to cancel the action.
----
----It does not have a native representation, but it contains also a IupCanvas to implement the bar handler.
----@param ihandledetachbox {[1]: ihandle|nil}
----@return detachbox|nil
+---@param ihandledetachbox {}
+---@return detachbox
 function iup.detachbox(ihandledetachbox) end
 
----Creates a void container that can interactively show or hide its child.
----
----It does not have a native representation, but it contains also several elements to implement the bar handler.
----@param ihandleexpander {[1]: ihandle|nil}
----@return expander|nil
+---@param ihandleexpander {}
+---@return expander
 function iup.expander(ihandleexpander) end
 
----Creates a void container that allows its child to be resized. Allows expanding and contracting the child size in one direction.
----
----It does not have a native representation but it contains also a IupFlatSeparator to implement the bar handler.
----@param ihandlesbox {[1]: ihandle|nil}
----@return sbox|nil
+---@param ihandlesbox {}
+---@return sbox
 function iup.sbox(ihandlesbox) end
 
----Creates a void container that split its client area in two. Allows the provided controls to be enclosed in a box that allows expanding and contracting the element size in one direction, but when one is expanded the other is contracted.
----
----It does not have a native representation, but it contains also a IupFlatSeparator to implement the bar handler.
----@param ihandlesplit {[1]: ihandle|nil}
----@return split|nil
+---@param ihandlesplit {}
+---@return split
 function iup.split(ihandlesplit) end
 
 -- Controls containers functions end
 
 -- Controls Standart classes start
 
----Creates an animated label interface element, which displays an image that is changed periodically.
----
----It uses an animation that is simply an IupUser with several IupImage as children.
-------
----[Notes:]
----The IupImageLib contains a simple animation to show an indefinite progress called "IUP_CircleProgressAnimation".
----
----The IUP-IM functions has two functions that can create an animation from image files called IupLoadAnimation and IupLoadAnimationFrames.
----@class animatedlabel: ihGUI, label
----@field start string -- [(write-only)]: starts the animation. The value is ignored. By default the animation is stopped.
----@field stop string -- [(write-only)]: stops the animation. The value is ignored.
----@field stopwhenhidden "YES"|"NO" -- [(since 3.18)]: automatically stops the animation when the label is hidden. Default: "Yes".
----@field running "YES"|"NO" -- [(read-only)]: return YES if the animation is running.
----@field frametime string -- The time between each frame. If the IupUser element has a FRAMETIME attribute it will be used to set the IupAnimatedLabel FRAMETIME attribute, but it can be overwritten later on.
----@field framecount string -- [(read-only)]: number of frames in the animation. It is simply IupGetChildCount of the given IupUser element.
----@field animation string -- the name of the element that contains the list of images. The value passed must be the name of an IupUser element with several IupImage as children. Use IupSetHandle or IupSetAttributeHandle to associate a child to a name. In Lua you can also use the element reference directly.
----@field animation_handle string -- same as ANIMATION but directly using the Ihandle* of the element.
+---@class animatedlabel: ihGUI
 local animatedlabel = {}
 animatedlabel.button_cb = button_cb
 animatedlabel.motion_cb = motion_cb
@@ -1168,25 +847,7 @@ animatedlabel.destroy_cb = destroy_cb
 animatedlabel.enterwindow_cb = enterwindow_cb
 animatedlabel.leavewindow_cb = leavewindow_cb
 
----Creates an interface element that is a button. When selected, this element activates a function in the application. Its visual presentation can contain a text and/or an image.
----@class button: ihGUI, fontAttributes, standartAttributes, visualAttributes
----@field alignment string -- [(non inheritable) (since 3.0)]: horizontal and vertical alignment. Possible values: "ALEFT", "ACENTER" and "ARIGHT",  combined to "ATOP", "ACENTER" and "ABOTTOM". Default: "ACENTER:ACENTER". Partial values are also accepted, like "ARIGHT" or ":ATOP", the other value will be obtained from the default value. In Motif, vertical alignment is restricted to "ACENTER". In GTK, horizontal alignment for multiple lines will align only the text block.
----@field bgcolor string -- Background color. If text and image are not defined, the button is configured to simply show a color, in this case set the button size because the natural size will be very small. In Windows and in GTK 3, the BGCOLOR attribute is ignored if text or image is defined. Default: the global attribute DLGBGCOLOR. BGCOLOR is ignored when FLAT=YES because it will be used the background from the native parent.
----@field canfocus string -- [(creation only) (non inheritable) (since 3.0)]: enables the focus traversal of the control. In Windows the button will respect CANFOCUS differently to some other controls. Default: YES.
----@field propagatefocus string -- [(non inheritable) (since 3.23)]: enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: `"NO"`.
----@field flat "NO"|"YES" -- [(creation olnly)]: Hides the button borders until the mouse cursor enters the button area. The border space is always there. Can be YES or NO. Default: `"NO"`.
----@field fgcolor string -- Text color. Default: the global attribute DLGFGCOLOR.
----@field image string -- [(non inheritable) (GTK 2.6)]: Image name. If set before map defines the behavior of the button to contain an image. The natural size will be size of the image in pixels, plus the button borders. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage. If TITLE is also defined and not empty both will be shown (except in Motif).
----@field iminactive string -- [(non inheritable) (GTK 2.6)]: Image name of the element when inactive. If it is not defined then the IMAGE is used and the colors will be replaced by a modified version of the background color creating the disabled effect. GTK will also change the inactive image to look like other inactive objects.
----@field impress string -- [(non inheritable) (GTK 2.6)]: Image name of the pressed button. If IMPRESS and IMAGE are defined, the button borders are not shown and not computed in natural size. When the button is clicked the pressed image does not offset. In Motif the button will lose its focus feedback also.
----@field impressborder "YES"|"NO" -- [(non inheritable)]: if enabled the button borders will be shown and computed even if IMPRESS is defined. Can be `"YES"` or `"NO"`. Default: `"NO"`.
----@field imageposition "LEFT"|"RIGHT"|"TOP"|"BOTTOM" -- [(non inheritable) (since 3.0) (GTK 2.10)]: Position of the image relative to the text when both are displayed. Can be: LEFT, RIGHT, TOP, BOTTOM. [Default:] `"LEFT"`.
----@field markup "YES"|"NO" -- [GTK only]: allows the title string to contains pango markup commands. Works only if a mnemonic is NOT defined in the title. Can be "YES" or "NO". [Default:] `"NO"`.
----@field padding string -- internal margin. Works just like the MARGIN attribute of the IupHbox and IupVbox containers, but uses a different name to avoid inheritance problems. Default value: "0x0". Value can be DEFAULTBUTTONPADDING, so the global attribute of this name will be used instead (since 3.29). (since 3.0)
----@field cpadding string -- same as PADDING but using the units of the SIZE attribute. It will actually set the PADDING attribute. (since 3.29)
----@field spacing string|"2" -- [(creation only)]: defines the spacing between the image associated and the button's text. Default: "2".
----@field cspacing string --  same as SPACING but using the units of the vertical part of the SIZE attribute. It will actually set the SPACING attribute. (since 3.29)
----@field title string -- [(non inheritable)]: Button's text. If IMAGE is not defined before map, then the default behavior is to contain only a text. The button behavior can not be changed after map. The natural size will be larger enough to include all the text in the selected font, even using multiple lines, plus the button borders. The '\n' character is accepted for line change. The "&" character can be used to define a mnemonic, the next character will be used as key. Use "&&" to show the "&" character instead on defining a mnemonic. The button can be activated from any control in the dialog using the "Alt+key" combination. In old Motif versions (2.1) using a '\n' causes an invalid memory access inside Motif. (mnemonic support since 3.0)
+---@class button: ihGUI
 local button = {}
 ---Action generated when any mouse button is pressed and when it is released. Both calls occur before the ACTION callback when button 1 is being used.
 ---@param self ihGUI
@@ -1195,7 +856,7 @@ button.action = function (self) end
 ---Action generated when the button 1 (usually left) is selected. This callback is called only after the mouse is released and when it is released inside the button area.
 ---@param self ihGUI
 ---@param button `iup.BUTTON1`|`iup.BUTTON2`|`iup.BUTTON3` -- LBM|MBM|RBM
----@param pressed 0|1 -- 0 -- released; 1 -- pressed
+---@param pressed `0`|`1` -- 0 -- released; 1 -- pressed
 ---@param x integer -- position in the canvas where the event has occurred, in pixels.
 ---@param y integer -- position in the canvas where the event has occurred, in pixels.
 ---@param status string -- status of the mouse buttons and some keyboard keys at the moment the event is generated. The following macros must be used for verification: iup.isshift(status), iup.iscontrol(status), iup.isbutton1(status), iup.isbutton2(status), iup.isbutton3(status), iup.isbutton4(status), iup.isbutton5(status), iup.isdouble(status), iup.isalt(status), iup.issys(status)
@@ -1292,24 +953,7 @@ canvas.leavewindow_cb = leavewindow_cb
 canvas.k_any = k_any
 canvas.help_cb = help_cb
 
----Creates a color palette to enable a color selection from several samples. It can select one or two colors. The primary color is selected with the left mouse button, and the secondary color is selected with the right mouse button. You can double click a cell to change its color and you can double click the preview area to switch between primary and secondary colors.
----@class colorbar: ihGUI, fontAttributes, standartAttributes, visualAttributes
----@field cellN string -- Contains the color of the "N" cell. "N" can be from 0 to NUM_CELLS-1.
----@field num_cells string|"16" -- [(non inheritable)]: Contains the number of color cells. Default: "16". The maximum number of colors is 256. The default colors use the same set of IupImage.
----@field count string -- [(read-only) (non inheritable)]: same as NUM_CELLS but it is read-only. (since 3.3)
----@field flat string|"YES"|"NO" -- use a 1 pixel flat border instead of the default 3 pixels sunken border. When enabled is the same as setting SHADOWED=NO. Can be Yes or No. Default: No. (since 3.24)
----@field flatcolor string|"0 0 0" -- color of the border when FLAT=Yes and the preview area borders. Default: "0 0 0". (since 3.24)
----@field focusselect string -- when focus is changed the primary selection is also changed. (since 3.29)
----@field num_parts string|"1" -- (non inheritable): Contains the number of lines or columns. Default: "1".
----@field orientation string -- Controls the orientation. It can be "VERTICAL" or "HORIZONTAL". Default: "VERTICAL".
----@field preview_size string -- (non inheritable): Fixes the size of the preview area in pixels. The default size is dynamically calculated from the size of the control. The size is reset to the default when SHOW_PREVIEW=NO.
----@field show_preview string -- Controls the display of the preview area. Default: "YES".
----@field show_secondary string -- Controls the existence of a secondary color selection. Default: "NO".
----@field primary_cell string -- [(non inheritable)]: Contains the index of the primary color. Default "0" (black).
----@field secondary_cell string -- [(non inheritable)]: Contains the index of the secondary color. Default "15" (white).
----@field squared string -- Controls the aspect ratio of the color cells. Non square cells expand equally to occupy all of the control area. Default: "YES".
----@field shadowed string -- Controls the 3D effect of the color cells. When enabled is the same as setting FLAT=NO. Default: "YES".
----@field transparency string -- Contains a color that will be not rendered in the color palette. The color cell will have a white and gray chess pattern. It can be used to create a palette with less colors than the number of cells.
+---@class colorbar: ihGUI
 local colorbar = {}
 colorbar.cell_cb = cell_cb
 colorbar.extended_cb = extended_cb
@@ -1325,22 +969,8 @@ colorbar.leavewindow_cb = leavewindow_cb
 colorbar.k_any = k_any
 colorbar.help_cb = help_cb
 
----Creates an element for selecting a color. The selection is done using a cylindrical projection of the RGB cube. The transformation defines a coordinate color system called HSI, that is still the RGB color space but using cylindrical coordinates.
----
----H is for Hue, and it is the angle around the RGB cube diagonal starting at red (RGB=255 0 0).
----
----S is for Saturation, and it is the normal distance from the color to the diagonal, normalized by its maximum value at the specified Hue. This also defines a point at the diagonal used to define I.
----
----I is for Intensity, and it is the distance from the point defined at the diagonal to black (RGB=0 0 0). I can also be seen as the projection of the color vector onto the diagonal. But I is not linear, see Notes below.
----
----(Migrated from the IupControls library since IUP 3.24, it does not depend on the CD library anymore.)
----
----For a dialog that simply returns the selected color, you can use function IupGetColor or IupColorDlg.
----@class colorbrowser: ihGUI, fontAttributes, standartAttributes, visualAttributes
----@field rgb string -- [(non inheritable)]: the color selected in the control, in the "r g b" format; r, g and b are integers ranging from 0 to 255. Default: "255 0 0".
----@field hsi string -- [(non inheritable)]: the color selected in the control, in the "h s i" format; h, s and i are floating point numbers ranging from 0-360, 0-1 and 0-1 respectively.
+---@class colorbrowser: ihGUI
 local colorbrowser = {}
--- TODO: add bgcolor
 colorbrowser.change_cb = change_cb
 colorbrowser.drag_cb = drag_cb
 ---Called after the value was interactively changed by the user. It is called whenever a CHANGE_CB or a DRAG_CB would also be called, it is just  called after them. (since 3.0)
@@ -1357,11 +987,7 @@ colorbrowser.leavewindow_cb = leavewindow_cb
 colorbrowser.k_any = k_any
 colorbrowser.help_cb = help_cb
 
----Creates a date editing interface element, which can displays a calendar for selecting a date.
----
----In Windows is a native element. In GTK and Motif is a custom element. In Motif is not capable of displaying the calendar.
 ---@class datepick: ihGUI
----@field calendarweeknumbers string -- Shows the number of the week along the year in the calendar. Default: NO.
 local datepick = {}
 datepick.valuechanged_cb = valuechanged_cb
 datepick.map_cb = map_cb
@@ -3306,4 +2932,3 @@ VISIBLELINES: When DROPDOWN=NO defines the number of visible lines for the Natur
 
 
 return iup
--- TODO: alias for "YES"|"NO"
