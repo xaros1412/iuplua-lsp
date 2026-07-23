@@ -2,6 +2,12 @@
 ---@class iup
 local iup = {}
 
+--Aliases start
+
+---@alias yes_no "YES"|"NO"
+
+--Aliases end
+
 ---@class ihandle: userdata
 local ihandle = {}
 
@@ -20,6 +26,79 @@ local fontAttributes = {}
 
 ---@class standartAttributes
 local standartAttributes = {}
+
+---Allows the element to expand, fulfilling empty spaces inside its container.
+---
+---`"YES"` (both directions), `"HORIZONTAL"`, `"VERTICAL"`, `"HORIZONTALFREE"`, `"VERTICALFREE"` or `"NO"`.
+---
+---Default: `"NO"`. For containers the default is `"YES"`.
+---
+---It is a non inheritable attribute, but a container inherit its parents EXPAND attribute. In other words, although EXPAND is non inheritable, it is inheritable for containers. So if you set it at a container it will not affect its children, except for those who are containers.
+---
+---The expansion is done equally for all expandable elements in the same container.
+---
+---For a container, the actual EXPAND value will be always a combination of its own value and the value of its children. In the sense that a container can only expand if its children can expand too in the same direction.
+---
+---The HORIZONTALFREE and VERTICALFREE values will not behave as normal expansion. These values will NOT affect the expansion of the container when set at its children, the children will simply expand to the available free space at the container. (Since 3.11)
+standartAttributes.expand = "NO"
+
+---Specifies the element User size, and returns the Current size, in units proportional to the size of a character.
+---
+---"width`x`height", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in characters fraction unit (see Notes below).
+---
+---You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 0. For example: "x40" (height only = "0x40") or "40x" (width only = "40x0").
+---
+---When this attribute is consulted the Current size of the control is returned. If both values are 0 then nil is returned.
+---
+---The size units observes the following heuristics:
+---
+---Width in 1/4's of the average width of a character for the current FONT of each control.
+---Height in 1/8's of the average height of a character for the current FONT of each control.
+---So, a SIZE="4x8" means 1 character width and 1 character height.
+---
+---Notice that this is the average character size, the space occupied by a specific string is always different than its number of character times its average character size, except when using a monospaced font like Courier. Usually for common strings this size is smaller than the actual size, so it is a good practice to leave more room than expected if you use the SIZE attribute. For smaller font sizes this difference is more noticeable than for larger font sizes.
+---
+---When this attribute is changed, the RASTERSIZE attribute is automatically updated.
+---
+---SIZE depends on FONT, so when FONT is changed and SIZE is set, then RASTERSIZE is also updated.
+---
+---The average character size of the current FONT can be obtained from the CHARSIZE attribute.
+---
+---To obtain the last computed Natural size of the element in pixels, use the read-only attribute NATURALSIZE. (Since 3.6)
+---
+---To obtain the User size of the element in pixels after it is mapped, use the attribute USERSIZE. (Since 3.12)
+--------------------------------------------------------------------------------------------------------------
+---A User size of "0x0" can be set, it can also be set using NULL. If both values are 0 then NULL is returned.
+---
+---If you wish to use the User size only as an initial size, change this attribute to NULL after the control is mapped, the returned size in IupGetAttribute will still be the Current size.
+---
+---The element is NOT immediately repositioned. Call IupRefresh to update the dialog layout.
+---
+---IupMap also updates the dialog layout even if it is already mapped, so calling it or calling IupShow, IupShowXY or IupPopup (they all call IupMap) will also update the dialog layout.
+standartAttributes.size = "0x0"
+
+---Specifies the element User size, and returns the Current size, in pixels.
+---
+---"widthxheight", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in pixels.
+---
+---You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 0. For example: "x40" (height only = "0x40") or "40x" (width only = "40x0").
+---
+---When this attribute is consulted the Current size of the control is returned. If both values are 0 then NULL is returned.
+---
+---When this attribute is set, it resets the SIZE attribute. So changes to the FONT attribute will not affect the User size of the element.
+---
+---To obtain the last computed Natural size of the control in pixels, use the read-only attribute NATURALSIZE. (Since 3.6)
+---
+---To obtain the User size of the element in pixels after it is mapped, use the attribute USERSIZE. (Since 3.12)
+------
+---A User size of "0x0" can be set, it can also be set using NULL. If both values are 0 then NULL is returned.
+---
+---If you wish to use the User size only as an initial size, change this attribute to NULL after the control is mapped, the returned size in IupGetAttribute will still be the Current size.
+---
+---The element is NOT immediately repositioned. Call IupRefresh to update the dialog layout.
+---
+---IupMap also updates the dialog layout even if it is already mapped, so calling it or calling IupShow, IupShowXY or IupPopup (they all call IupMap) will also update the dialog layout.
+standartAttributes.rastersize = "0x0"
 
 ---The position of the element relative to the origin of the Client area of the native parent. If you add the CLIENTOFFSET attribute of the native parent, you can obtain the coordinates relative to the Window area of the native parent. See the Layout Guide.
 ---
@@ -44,8 +123,6 @@ standartAttributes.postion = "x,y"
 ---If the element can be expanded, then its empty space will NOT be occupied by other controls although its size will be limited.
 ---
 ---In the IupDialog will also limit the interactive resize of the dialog.
----
----See the Layout Guide for mode details on sizes.
 standartAttributes.minsize = "0x0"
 
 ---Specifies the element maximum size in pixels during the layout process.
@@ -55,6 +132,12 @@ standartAttributes.minsize = "0x0"
 ---You can also set only one of the parameters by removing the other one and maintaining the separator "x", but this is equivalent of setting the other value to 65535. For example: "x40" (height only = "65535x40") or "40x" (width only = "40x65535").
 ---
 ---Default: `"65535x65535"`
+---
+---The limits are applied during the layout computation. It will limit the Natural size and the Current size.
+---
+---If the element can be expanded, then its empty space will NOT be occupied by other controls although its size will be limited.
+---
+---In the IupDialog will also limit the interactive resize of the dialog.
 standartAttributes.maxsize = "65535x65535"
 
 ---Applies a set of attributes to a control. The THEME attribute in inheritable.
@@ -86,6 +169,131 @@ standartAttributes.theme = ""
 ---
 ---The global attribute DEFAULTTHEME can be applied to all elements during creation.
 standartAttributes.ntheme = ""
+
+--- [(read-only)]: returns -1 if mapped
+standartAttributes.wid = "-1"
+
+---@class containerAttributes
+local containerAttributes = {}
+
+---[(read-only*) (non inheritable) (since 3.0)]
+---Returns the client area size of a container. It is the space available for positioning and sizing children. It is the container Current size excluding the decorations (if any).
+---
+---Value:
+---"widthxheight", where width and height are integer values corresponding to the horizontal and vertical size, respectively, in pixels. If both values are 0 then "0x0" is returned.
+---
+---Notes:
+---(*) For IupDialog is NOT read-only, and it will re-define RASTERSIZE by adding the decorations to the given Client size. (Since 3.3)
+---
+---For IupHbox, IupVbox and IupGridBox it consider the MARGIN attribute as a decoration.
+---
+---For IupSplit returns the total area available for the two children.
+---@type string
+containerAttributes.clientsize = nil
+
+---[(read-only) (non inheritable) (since 3.3)]
+---Returns the native container internal offset to the Client area, see the Layout Guide. Useful for IupFrame, IupTabs and IupDialog that have decorations. Can also be consulted in other containers, it will simply return "0x0".
+---
+---This attribute can be used in conjunction with the POSITION attribute of a child so the coordinates of a child relative to the native parent top-left corner can be obtained.
+---
+---Value:
+---"dxxdy", where dx and dy are integer values corresponding to the horizontal and vertical offsets, respectively, in pixels.
+---
+---Notes:
+---In GTK and Motif, for the IupDialog, the dy value is negative when there is a menu. This occurs because in those systems the menu is placed inside the Client Area and all children must be placed below the menu. In Windows it will return 0x0, except when CUSTOMFRAMEDRAW is used.
+---
+---In Windows, for the IupFrame, the value is always "0x0" the position of the child is still relative to the top-left corner of the frame. This is automatically compensated in calculation of the POSITION attribute.
+containerAttributes.clientoffset = nil
+
+---@class visualAttributes
+local visualAttributes = {}
+
+---[(read-only) (non inheritable) (since 3.4)]
+---Returns the absolute horizontal and/or vertical position of the top-left corner of the client area relative to the origin of the main screen in pixels. It is similar to POSITION but relative to the origin of the main screen, instead of the origin of the client area. The origin of the main screen is at the top-left corner, in Windows it is affected by the position of the Start Menu when it is at the top or left side of the screen.
+---IMPORTANT: For the dialog, it is the position of the top-left corner of the window, NOT the client area. It is the same position used in IupShowXY and IupPopup. In GTK, if the dialog is hidden the values can be outdated.
+---@type string
+visualAttributes.screenposition = "x,y"
+
+---[(read-only) (non inheritable) (since 3.4)]
+---Returns the absolute horizontal and/or vertical position of the top-left corner of the client area relative to the origin of the main screen in pixels. It is similar to POSITION but relative to the origin of the main screen, instead of the origin of the client area. The origin of the main screen is at the top-left corner, in Windows it is affected by the position of the Start Menu when it is at the top or left side of the screen.
+---IMPORTANT: For the dialog, it is the position of the top-left corner of the window, NOT the client area. It is the same position used in IupShowXY and IupPopup. In GTK, if the dialog is hidden the values can be outdated.
+---@type string
+visualAttributes.screenpositionx = "x"
+
+---[(read-only) (non inheritable) (since 3.4)]
+---Returns the absolute horizontal and/or vertical position of the top-left corner of the client area relative to the origin of the main screen in pixels. It is similar to POSITION but relative to the origin of the main screen, instead of the origin of the client area. The origin of the main screen is at the top-left corner, in Windows it is affected by the position of the Start Menu when it is at the top or left side of the screen.
+---IMPORTANT: For the dialog, it is the position of the top-left corner of the window, NOT the client area. It is the same position used in IupShowXY and IupPopup. In GTK, if the dialog is hidden the values can be outdated.
+---@type string
+visualAttributes.screenpositiony = "y"
+
+---[(non inheritable)]
+---Text to be shown when the mouse lies over the element.
+---@type string
+visualAttributes.tip = nil
+
+---[(non inheritable)]
+---[Windows Only]: The tip window will have the appearance of a cartoon "balloon" with rounded corners and a stem pointing to the item. Default: NO.
+---@type string
+visualAttributes.tipballoon = "NO"
+
+---[(non inheritable)]
+---[Windows Only]: When using the balloon format, the tip can also has a title in a separate area.
+---@type string
+visualAttributes.tipballoontitle = nil
+
+---[(non inheritable)]
+---[Windows Only]: When using the balloon format, the tip can also has a pre-defined icon in the title area.
+---Value:
+---"0" - No icon (default)
+---"1" - Info icon
+---"2" - Warning icon
+---"3" - Error Icon
+---@type string|"0"|"1"|"2"|"3"
+visualAttributes.tipballoontitleicon = "0"
+
+---[Windows and Motif Only]: The tip background color. Default: "255 255 225" (Light Yellow)
+---@type string|"255 255 255"
+visualAttributes.tipbgcolor = "255 255 255"
+
+---[Windows and Motif Only]: Time the tip will remain visible. Default: "5000". In Windows the maximum value is 32767 milliseconds.
+---@type string|"5000"
+visualAttributes.tipdelay = "5000"
+
+---[Windows and Motif Only]: The font for the tip text. If not defined the font used for the text is the same as the FONT attribute for the element. If the value is SYSTEM then, no font is selected and the default system font for the tip will be used.
+---@type string
+visualAttributes.tipfont = nil
+
+---[GTK only]: name of an image to be displayed in the TIP. See IupImage. (GTK 2.12)
+---@type string
+visualAttributes.tipicon = nil
+
+---[GTK only]: allows the tip string to contains Pango markup commands. Can be "YES" or "NO". Default: "NO". Must be set before setting the TIP attribute. (GTK 2.12)
+---@type yes_no
+visualAttributes.tipmarkup = "NO"
+
+---(non inheritable): Specifies a rectangle inside the element where the tip will be activated. Format: "%d %d %d %d"="x1 y1 x2 y2". Default: all the element area. (GTK 2.12)
+---@type string
+visualAttributes.tiprect = nil
+
+---Shows or hides the tip under the mouse cursor. Use values "YES" or "NO". Returns the current visible state. (GTK 2.12) (since 3.5)
+---@type yes_no
+visualAttributes.tipvisible = nil
+
+---Action before a tip is displayed.
+---@param self ihandle
+---@param x integer -- cursor position relative to the top-left corner of the element
+---@param y integer -- cursor position relative to the top-left corner of the element
+---@return `iup.DEFAULT`
+visualAttributes.tips_cb = function(self, x, y) end
+
+---[(write-only) (non inheritable)]
+---Change the ZORDER of a dialog or control. It is commonly used for dialogs, but it can be used to control the z-order of controls in a dialog.
+---@type "TOP"|"BOTTOM"
+visualAttributes.zorder = nil
+
+---Shows or hides the element.
+---@type yes_no
+visualAttributes.visible = "YES"
 
 -- Callbacks start
 
@@ -492,14 +700,37 @@ ihandle.append = iup.Append
 ihandle.detach = iup.Detach
 ihandle.insert = iup.Insert
 
----@class ihDragNDrop: ihandle
-local ihDragNDrop = {}
-ihDragNDrop.dragbegin_cb = dragbegin_cb
-ihDragNDrop.dragdatasize_cb = dragdatasize_cb
-ihDragNDrop.dragdata_cb = dragdata_cb
-ihDragNDrop.dragend_cb = dragend_cb
-ihDragNDrop.dropdata_cb = dropdata_cb
-ihDragNDrop.dropmotion_cb = dropmotion_cb
+---When enabled allow the use of callbacks for controlling the drag and drop handling.
+---
+---The user starts a drag and drop transfer by pressing the mouse button over the data (Windows and GTK: left button; Motif: middle button) which is referred to as the drag source. The data can be dropped in any location that has been registered as a drop target. The drop occurs when the user releases the mouse button. This can be done inside a control, from one control to another in the same dialog, in different dialogs of the same application, or between different applications (the other application does NOT need to be implemented with IUP).
+---
+---In IUP, a drag and drop transfer can result in the data being moved or copied. A copy operation is enabled with the CTRL key pressed. A move operation is enabled with the SHIFT key pressed. A move operation will be possible only if the attribute DRAGSOURCEMOVE is Yes. When no key is pressed the default operation is copy when DRAGSOURCEMOVE=No and move when DRAGSOURCEMOVE=Yes. The user can cancel a drag at any time by pressing the ESCAPE key.
+---
+---Steps to use the Drag & Drop support in an IUP application:
+---
+---[AT SOURCE]:
+---   Enable the element as source using the attribute DRAGSOURCE=YES;
+---   Define the data types supported by the element for the drag operation using the DRAGTYPES attribute;
+---   Register the required callbacks DRAGBEGIN_CB, DRAGDATASIZE_CB and DRAGDATA_CB for drag handling. DRAGEND_CB is the only optional drag callback, all other callbacks and attributes must be set.
+---[AT TARGET]:
+---   Enable the element as target using the attribute DROPTARGET=YES;
+---   Define the data types supported by the element for the drop using the DROPTYPES attribute;
+---   Register the required callback DROPDATA_CB for handling the data received. This callback and all the drop target attributes must be set too. DROPMOTION_CB is the only optional drop callback.
+---@class dragNDrop
+---@field dragcursor string -- [(non inheritable)]: Name of an image to be used as cursor during drag. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage. (since 3.11)
+---@field dragsource yes_no -- [(non inheritable)]: Set up a control as a source for drag operations. Default: NO.
+---@field dragtypes string -- [(non inheritable)]: A list of data types that are supported by the source. Accepts a string with one or more names separated by commas. See Notes bellow for a list of known names. Must be set.
+---@field dragsourcemove yes_no -- [(non inheritable)]: Enables the move action. Default: NO (only copy is enabled).
+---@field droptarget yes_no -- [(non inheritable)]: Set up a control as a destination for drop operations. Default: NO.
+---@field droptypes  string -- [(non inheritable)]: A list of data types that are supported by the target. Accepts a string with one or more names separated by commas. See Notes bellow for a list of known names. Must be set.
+local dragNDrop = {}
+--Callbacks
+dragNDrop.dragbegin_cb = dragbegin_cb
+dragNDrop.dragdatasize_cb = dragdatasize_cb
+dragNDrop.dragdata_cb = dragdata_cb
+dragNDrop.dragend_cb = dragend_cb
+dragNDrop.dropdata_cb = dropdata_cb
+dragNDrop.dropmotion_cb = dropmotion_cb
 
 -- ihandle.postmessage_cb = iup.PostMessage
 
@@ -597,7 +828,7 @@ function iup.PlayInput(filename) end
 ---@class user: ihandle
 local user = {}
 
----@class dialog: ihGUI, ihDragNDrop
+---@class dialog: ihGUI, dragNDrop
 ---@field background string (non inheritable): Dialog background color or image. Can be a non inheritable alternative to BGCOLOR or can be the name of an image to be tiled on the background. See also the screenshots of the sample.c results with normal background, changing the dialog BACKGROUND, the dialog BGCOLOR and the children BGCOLOR. Not working in GTK 3. (since 3.0)
 ---@field border string (non inheritable) (creation only): Shows a resize border around the dialog. Default: "YES". BORDER=NO is useful only when RESIZE=NO, MAXBOX=NO, MINBOX=NO, MENUBOX=NO and TITLE=NULL, if any of these are defined there will be always some border.
 ---@field cursor string (non inheritable): Defines a cursor for the dialog.
@@ -675,71 +906,121 @@ function dialog:hide() end
 -- Controls containers classes start
 
 
----@class fill: ihGUI, fontAttributes
+---Creates void element, which dynamically occupies empty spaces always trying to expand itself. Its parent should be an IupHbox, an IupVbox or a IupGridBox, or else this type of expansion will not work. If an EXPAND is set on at least one of the other children of the box, then the fill expansion is ignored.
+---
+---It does not have a native representation.
+---@class fill: ihGUI, fontAttributes, standartAttributes
 ---@field expand string -- [(non inheritable)(read-only)]: If User size is not defined, then when inside a IupHbox/IupGridBox EXPAND is HORIZONTAL, when inside a IupVbox EXPAND is VERTICAL. If User size is defined then EXPAND is NO
 ---@field size string -- [(non inheritable)]: Defines the width, if inside a IupHbox, or the height, if it is inside a IupVbox. The standard format "wxh" can also be used, but width will be ignored if inside a IupVbox and height will be ignored if inside a IupHbox (since 3.3). When consulted behaves as the standard SIZE/RASTERSIZE attributes
 ---@field rastersize string -- [(non inheritable)]: Defines the width, if inside a IupHbox, or the height, if it is inside a IupVbox. The standard format "wxh" can also be used, but width will be ignored if inside a IupVbox and height will be ignored if inside a IupHbox (since 3.3). When consulted behaves as the standard SIZE/RASTERSIZE attributes
 ---@field wid string|"-1" -- [(read-only)]: returns -1 if mapped
 local fill = {}
 
----@class space: ihGUI
+---Creates void element, which occupies an empty space.
+---
+---It does not have a native representation.
+---@class space: ihGUI, fontAttributes, standartAttributes
+---@field wid string|"-1" -- [(read-only)]: returns -1 if mapped
 local space = {}
 
----@class cbox: ihGUI
+---Creates a void container for position elements in absolute coordinates. It is a concrete layout container.
+---
+---It does not have a native representation.
+---
+---The IupCbox is equivalent of a IupVbox or IupHbox where all the children have the FLOATING attribute set to YES, but children must use CX and CY attributes instead of the POSITION attribute.
+---@class cbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local cbox = {}
 
----@class gridbox: ihGUI
+---Creates a void container for composing elements in a regular grid. It is a box that arranges the elements it contains from top to bottom and from left to right, but can distribute the elements in lines or in columns.
+---@class gridbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local gridbox = {}
 
----@class multibox: ihGUI
+---Creates a void container for composing elements in a irregular grid. It is a box that arranges the elements it contains from top to bottom and from left to right, by distributing the elements in lines or in columns. But its EXPAND attribute does not behave as a regular container, instead it behaves as a regular element expanding into the available space.
+---@class multibox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local multibox = {}
 
----@class hbox: ihGUI
+---Creates a void container for composing elements horizontally. It is a box that arranges the elements it contains from left to right.
+---
+---It does not have a native representation.
+---@class hbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local hbox = {}
 
----@class vbox: ihGUI
+---Creates a void container for composing elements vertically. It is a box that arranges the elements it contains from top to bottom.
+---
+---It does not have a native representation.
+---@class vbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local vbox = {}
 
----@class zbox: ihGUI
+---Creates a void container for composing elements in hidden layers with only one layer visible. It is a box that piles up the children it contains, only the one child is visible.
+---
+---It does not have a native representation.
+---
+---Zbox works by changing the VISIBLE attribute of its children, so if any of the grand children has its VISIBLE attribute directly defined then Zbox will NOT change its state.
+---@class zbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local zbox = {}
 
----@class radio: ihGUI
+---Creates a void container for grouping mutual exclusive toggles. Only one of its descendent toggles will be active at a time. The toggles can be at any composition.
+---
+---It does not have a native representation.
+---@class radio: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local radio = {}
 
+---Creates a void container that does not affect the dialog layout. It acts by normalizing all the controls in a list so their natural size becomes the biggest natural size amongst them. All natural widths will be set to the biggest width, and all natural heights will be set to the biggest height. The controls of the list must be inside a valid container in the dialog.
 ---@class normalizer: ihGUI
 local normalizer = {}
 
----@class frame: ihGUI
+---Creates a native container, which draws a frame with a title around its child.
+---@class frame: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local frame = {}
 
----@class flatframe: ihGUI
+---Creates a native container, which draws a frame with a title around its child. The decorations are manually drawn. The control inherits from IupBackgroundBox.
+---@class flatframe: ihGUI, backgroundbox
 local flatframe = {}
 
----@class tabs: ihGUI
+---Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems.
+---@class tabs: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local tabs = {}
 
----@class flattabs: ihGUI
+---Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems. Identical to the IupTabs control but the decorations and buttons are manually drawn. It inherits from IupCanvas.
+---@class flattabs: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
 local flattabs = {}
 
----@class backgroundbox: ihGUI
+---Creates a simple native container with no decorations. Useful for controlling children visibility for IupZbox or IupExpander. It inherits from IupCanvas.
+---@class backgroundbox: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
 local backgroundbox = {}
 
----@class scrollbox: ihGUI
+---Creates a native container that allows its child to be scrolled. It inherits from IupCanvas.
+---@class scrollbox: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
 local scrollbox = {}
 
----@class flatscrollbox: ihGUI
+---Creates a native container that allows its child to be scrolled. It inherits from IupCanvas. The difference from IupScrollBox is that its scrollbars are drawn.
+---@class flatscrollbox: ihGUI, canvas, fontAttributes, standartAttributes, containerAttributes
 local flatscrollbox = {}
 
----@class detachbox: ihGUI
+---Creates a detachable void container.
+---
+---Dragging and dropping this element, it creates a new dialog composed by its child or elements arranged in it (for example, a child like IupVbox or IupHbox). During the drag, the ESC key can be pressed to cancel the action.
+---
+---It does not have a native representation, but it contains also a IupCanvas to implement the bar handler.
+---@class detachbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local detachbox = {}
 
----@class expander: ihGUI
+---Creates a void container that can interactively show or hide its child.
+---
+---It does not have a native representation, but it contains also several elements to implement the bar handler.
+---@class expander: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local expander = {}
 
----@class sbox: ihGUI
+---Creates a void container that allows its child to be resized. Allows expanding and contracting the child size in one direction.
+---
+---It does not have a native representation but it contains also a IupFlatSeparator to implement the bar handler.
+---@class sbox: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local sbox = {}
 
----@class split: ihGUI
+---Creates a void container that split its client area in two. Allows the provided controls to be enclosed in a box that allows expanding and contracting the element size in one direction, but when one is expanded the other is contracted.
+---
+---It does not have a native representation, but it contains also a IupFlatSeparator to implement the bar handler.
+---@class split: ihGUI, fontAttributes, standartAttributes, containerAttributes
 local split = {}
 
 
@@ -748,95 +1029,164 @@ local split = {}
 
 -- Controls containers functions start
 
----@param ihandlefill {}
+---Creates void element, which dynamically occupies empty spaces always trying to expand itself. Its parent should be an IupHbox, an IupVbox or a IupGridBox, or else this type of expansion will not work. If an EXPAND is set on at least one of the other children of the box, then the fill expansion is ignored.
+---
+---It does not have a native representation.
+---@param ihandlefill {[1]: nil}
 ---@return fill
 function iup.fill(ihandlefill) end
 
----@param ihandlespace {}
+---Creates void element, which occupies an empty space.
+---
+---It does not have a native representation.
+---
+---When an IupFill is inside a IupVbox or IupHbox it will affect the expansion of the box because it is always expandable. Even when you set its size to a given value, it will still affect the layout, because it is always marked as an expandable element.
+---
+---IupSpace will simply occupy a space in the layout. It does not have a natural size, it is 0x0 by default. It can be expandable or not, EXPAND will work as a regular element. The attributes SIZE and RASTERSIZE can be normally set.
+---@param ihandlespace {[1]: nil}
 ---@return space
 function iup.space(ihandlespace) end
 
----@param ihandlecbox {}
----@return cbox
+---Creates a void container for position elements in absolute coordinates. It is a concrete layout container.
+---
+---It does not have a native representation.
+---
+---The IupCbox is equivalent of a IupVbox or IupHbox where all the children have the FLOATING attribute set to YES, but children must use CX and CY attributes instead of the POSITION attribute.
+---
+---
+---CX, CY [(non inheritable) (at children only)]: Position in pixels of the child relative to the top-left corner of the box. Must be set for each child inside the box.
+---
+---The box can be created with no elements and be dynamic filled using IupAppend or IupInsert.
+---@param ihandlecbox {[integer]: ihandle}
+---@return cbox|nil
 function iup.cbox(ihandlecbox) end
 
----@param ihandlegridbox {}
----@return gridbox
+---Creates a void container for composing elements in a regular grid. It is a box that arranges the elements it contains from top to bottom and from left to right, but can distribute the elements in lines or in columns.
+---@param ihandlegridbox {[integer]: ihandle}
+---@return gridbox|nil
 function iup.gridbox(ihandlegridbox) end
 
----@param ihandlemultibox {}
----@return multibox
+---@param ihandlemultibox {[integer]: ihandle} --  List of the identifiers that will be placed in the box.
+---@return multibox|nil
 function iup.multibox(ihandlemultibox) end
 
----@param ihandlehbox {}
----@return hbox
+---Creates a void container for composing elements horizontally. It is a box that arranges the elements it contains from left to right.
+---@param ihandlehbox {[integer]: ihandle}
+---@return hbox|nil
 function iup.hbox(ihandlehbox) end
 
----@param ihandlevbox {}
----@return vbox
+---Creates a void container for composing elements vertically. It is a box that arranges the elements it contains from top to bottom.
+---@param ihandlevbox {[integer]: ihandle}
+---@return vbox|nil
 function iup.vbox(ihandlevbox) end
 
----@param ihandlezbox {}
----@return zbox
+---Creates a void container for composing elements in hidden layers with only one layer visible. It is a box that piles up the children it contains, only the one child is visible.
+---
+---It does not have a native representation.
+---
+---Zbox works by changing the VISIBLE attribute of its children, so if any of the grand children has its VISIBLE attribute directly defined then Zbox will NOT change its state.
+---@param ihandlezbox {[integer]: ihandle}
+---@return zbox|nil
 function iup.zbox(ihandlezbox) end
 
----@param ihandleradio {}
----@return radio
+---Creates a void container for grouping mutual exclusive toggles. Only one of its descendent toggles will be active at a time. The toggles can be at any composition.
+---
+---It does not have a native representation.
+---@param ihandleradio {[1]: ihandle|nil}
+---@return radio|nil
 function iup.radio(ihandleradio) end
 
----@param ihandlenormalizer {}
----@return normalizer
+---Creates a void container that does not affect the dialog layout. It acts by normalizing all the controls in a list so their natural size becomes the biggest natural size amongst them. All natural widths will be set to the biggest width, and all natural heights will be set to the biggest height. The controls of the list must be inside a valid container in the dialog.
+---@param ihandlenormalizer {[integer]: ihandle}
+---@return normalizer|nil
 function iup.normalizer(ihandlenormalizer) end
 
----@param ihandleframe {}
----@return frame
+---Creates a native container, which draws a frame with a title around its child.
+---@param ihandleframe {[1]: ihandle|nil}
+---@return frame|nil
 function iup.frame(ihandleframe) end
 
----@param ihandleflatframe {}
----@return flatframe
+---Creates a native container, which draws a frame with a title around its child. The decorations are manually drawn. The control inherits from IupBackgroundBox.
+---@param ihandleflatframe {[1]: ihandle|nil}
+---@return flatframe|nil
 function iup.flatframe(ihandleflatframe) end
 
----@param ihandletabs {}
----@return tabs
+---Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems.
+---@param ihandletabs {[integer]: ihandle}
+---@return tabs|nil
 function iup.tabs(ihandletabs) end
 
----@param ihandleflattabs {}
----@return flattabs
+---Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems. Identical to the IupTabs control but the decorations and buttons are manually drawn. It inherits from IupCanvas.
+---@param ihandleflattabs {[integer]: ihandle}
+---@return flattabs|nil
 function iup.flattabs(ihandleflattabs) end
 
----@param ihandlebackgroundbox {}
----@return backgroundbox
+---Creates a native container for composing elements in hidden layers with only one layer visible (just like IupZbox), but its visibility can be interactively controlled. The interaction is done in a line of tabs with titles and arranged according to the tab type. Also known as Notebook in native systems. Identical to the IupTabs control but the decorations and buttons are manually drawn. It inherits from IupCanvas.
+---@param ihandlebackgroundbox {[1]: ihandle|nil}
+---@return backgroundbox|nil
 function iup.backgroundbox(ihandlebackgroundbox) end
 
----@param ihandlescrollbox {}
----@return scrollbox
+---Creates a native container that allows its child to be scrolled. It inherits from IupCanvas.
+---@param ihandlescrollbox {[1]: ihandle|nil}
+---@return scrollbox|nil
 function iup.scrollbox(ihandlescrollbox) end
 
----@param ihandleflatscrollbox {}
----@return flatscrollbox
+---Creates a native container that allows its child to be scrolled. It inherits from IupCanvas. The difference from IupScrollBox is that its scrollbars are drawn.
+---@param ihandleflatscrollbox {[1]: ihandle|nil}
+---@return flatscrollbox|nil
 function iup.flatscrollbox(ihandleflatscrollbox) end
 
----@param ihandledetachbox {}
----@return detachbox
+---Creates a detachable void container.
+---
+---Dragging and dropping this element, it creates a new dialog composed by its child or elements arranged in it (for example, a child like IupVbox or IupHbox). During the drag, the ESC key can be pressed to cancel the action.
+---
+---It does not have a native representation, but it contains also a IupCanvas to implement the bar handler.
+---@param ihandledetachbox {[1]: ihandle|nil}
+---@return detachbox|nil
 function iup.detachbox(ihandledetachbox) end
 
----@param ihandleexpander {}
----@return expander
+---Creates a void container that can interactively show or hide its child.
+---
+---It does not have a native representation, but it contains also several elements to implement the bar handler.
+---@param ihandleexpander {[1]: ihandle|nil}
+---@return expander|nil
 function iup.expander(ihandleexpander) end
 
----@param ihandlesbox {}
----@return sbox
+---Creates a void container that allows its child to be resized. Allows expanding and contracting the child size in one direction.
+---
+---It does not have a native representation but it contains also a IupFlatSeparator to implement the bar handler.
+---@param ihandlesbox {[1]: ihandle|nil}
+---@return sbox|nil
 function iup.sbox(ihandlesbox) end
 
----@param ihandlesplit {}
----@return split
+---Creates a void container that split its client area in two. Allows the provided controls to be enclosed in a box that allows expanding and contracting the element size in one direction, but when one is expanded the other is contracted.
+---
+---It does not have a native representation, but it contains also a IupFlatSeparator to implement the bar handler.
+---@param ihandlesplit {[1]: ihandle|nil}
+---@return split|nil
 function iup.split(ihandlesplit) end
 
 -- Controls containers functions end
 
 -- Controls Standart classes start
 
----@class animatedlabel: ihGUI
+---Creates an animated label interface element, which displays an image that is changed periodically.
+---
+---It uses an animation that is simply an IupUser with several IupImage as children.
+------
+---[Notes:]
+---The IupImageLib contains a simple animation to show an indefinite progress called "IUP_CircleProgressAnimation".
+---
+---The IUP-IM functions has two functions that can create an animation from image files called IupLoadAnimation and IupLoadAnimationFrames.
+---@class animatedlabel: ihGUI, label
+---@field start string -- [(write-only)]: starts the animation. The value is ignored. By default the animation is stopped.
+---@field stop string -- [(write-only)]: stops the animation. The value is ignored.
+---@field stopwhenhidden yes_no -- [(since 3.18)]: automatically stops the animation when the label is hidden. Default: "Yes".
+---@field running yes_no -- [(read-only)]: return YES if the animation is running.
+---@field frametime string -- The time between each frame. If the IupUser element has a FRAMETIME attribute it will be used to set the IupAnimatedLabel FRAMETIME attribute, but it can be overwritten later on.
+---@field framecount string -- [(read-only)]: number of frames in the animation. It is simply IupGetChildCount of the given IupUser element.
+---@field animation string -- the name of the element that contains the list of images. The value passed must be the name of an IupUser element with several IupImage as children. Use IupSetHandle or IupSetAttributeHandle to associate a child to a name. In Lua you can also use the element reference directly.
+---@field animation_handle string -- same as ANIMATION but directly using the Ihandle* of the element.
 local animatedlabel = {}
 animatedlabel.button_cb = button_cb
 animatedlabel.motion_cb = motion_cb
@@ -847,7 +1197,25 @@ animatedlabel.destroy_cb = destroy_cb
 animatedlabel.enterwindow_cb = enterwindow_cb
 animatedlabel.leavewindow_cb = leavewindow_cb
 
----@class button: ihGUI
+---Creates an interface element that is a button. When selected, this element activates a function in the application. Its visual presentation can contain a text and/or an image.
+---@class button: ihGUI, fontAttributes, standartAttributes, visualAttributes
+---@field alignment string -- [(non inheritable) (since 3.0)]: horizontal and vertical alignment. Possible values: "ALEFT", "ACENTER" and "ARIGHT",  combined to "ATOP", "ACENTER" and "ABOTTOM". Default: "ACENTER:ACENTER". Partial values are also accepted, like "ARIGHT" or ":ATOP", the other value will be obtained from the default value. In Motif, vertical alignment is restricted to "ACENTER". In GTK, horizontal alignment for multiple lines will align only the text block.
+---@field bgcolor string -- Background color. If text and image are not defined, the button is configured to simply show a color, in this case set the button size because the natural size will be very small. In Windows and in GTK 3, the BGCOLOR attribute is ignored if text or image is defined. Default: the global attribute DLGBGCOLOR. BGCOLOR is ignored when FLAT=YES because it will be used the background from the native parent.
+---@field canfocus string -- [(creation only) (non inheritable) (since 3.0)]: enables the focus traversal of the control. In Windows the button will respect CANFOCUS differently to some other controls. Default: YES.
+---@field propagatefocus string -- [(non inheritable) (since 3.23)]: enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: `"NO"`.
+---@field flat yes_no -- [(creation olnly)]: Hides the button borders until the mouse cursor enters the button area. The border space is always there. Can be YES or NO. Default: `"NO"`.
+---@field fgcolor string -- Text color. Default: the global attribute DLGFGCOLOR.
+---@field image string -- [(non inheritable) (GTK 2.6)]: Image name. If set before map defines the behavior of the button to contain an image. The natural size will be size of the image in pixels, plus the button borders. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage. If TITLE is also defined and not empty both will be shown (except in Motif).
+---@field iminactive string -- [(non inheritable) (GTK 2.6)]: Image name of the element when inactive. If it is not defined then the IMAGE is used and the colors will be replaced by a modified version of the background color creating the disabled effect. GTK will also change the inactive image to look like other inactive objects.
+---@field impress string -- [(non inheritable) (GTK 2.6)]: Image name of the pressed button. If IMPRESS and IMAGE are defined, the button borders are not shown and not computed in natural size. When the button is clicked the pressed image does not offset. In Motif the button will lose its focus feedback also.
+---@field impressborder yes_no -- [(non inheritable)]: if enabled the button borders will be shown and computed even if IMPRESS is defined. Can be `"YES"` or `"NO"`. Default: `"NO"`.
+---@field imageposition "LEFT"|"RIGHT"|"TOP"|"BOTTOM" -- [(non inheritable) (since 3.0) (GTK 2.10)]: Position of the image relative to the text when both are displayed. Can be: LEFT, RIGHT, TOP, BOTTOM. [Default:] `"LEFT"`.
+---@field markup yes_no -- [GTK only]: allows the title string to contains pango markup commands. Works only if a mnemonic is NOT defined in the title. Can be "YES" or "NO". [Default:] `"NO"`.
+---@field padding string -- internal margin. Works just like the MARGIN attribute of the IupHbox and IupVbox containers, but uses a different name to avoid inheritance problems. Default value: "0x0". Value can be DEFAULTBUTTONPADDING, so the global attribute of this name will be used instead (since 3.29). (since 3.0)
+---@field cpadding string -- same as PADDING but using the units of the SIZE attribute. It will actually set the PADDING attribute. (since 3.29)
+---@field spacing string|"2" -- [(creation only)]: defines the spacing between the image associated and the button's text. Default: "2".
+---@field cspacing string --  same as SPACING but using the units of the vertical part of the SIZE attribute. It will actually set the SPACING attribute. (since 3.29)
+---@field title string -- [(non inheritable)]: Button's text. If IMAGE is not defined before map, then the default behavior is to contain only a text. The button behavior can not be changed after map. The natural size will be larger enough to include all the text in the selected font, even using multiple lines, plus the button borders. The '\n' character is accepted for line change. The "&" character can be used to define a mnemonic, the next character will be used as key. Use "&&" to show the "&" character instead on defining a mnemonic. The button can be activated from any control in the dialog using the "Alt+key" combination. In old Motif versions (2.1) using a '\n' causes an invalid memory access inside Motif. (mnemonic support since 3.0)
 local button = {}
 ---Action generated when any mouse button is pressed and when it is released. Both calls occur before the ACTION callback when button 1 is being used.
 ---@param self ihGUI
@@ -856,7 +1224,7 @@ button.action = function (self) end
 ---Action generated when the button 1 (usually left) is selected. This callback is called only after the mouse is released and when it is released inside the button area.
 ---@param self ihGUI
 ---@param button `iup.BUTTON1`|`iup.BUTTON2`|`iup.BUTTON3` -- LBM|MBM|RBM
----@param pressed `0`|`1` -- 0 -- released; 1 -- pressed
+---@param pressed 0|1 -- 0 -- released; 1 -- pressed
 ---@param x integer -- position in the canvas where the event has occurred, in pixels.
 ---@param y integer -- position in the canvas where the event has occurred, in pixels.
 ---@param status string -- status of the mouse buttons and some keyboard keys at the moment the event is generated. The following macros must be used for verification: iup.isshift(status), iup.iscontrol(status), iup.isbutton1(status), iup.isbutton2(status), iup.isbutton3(status), iup.isbutton4(status), iup.isbutton5(status), iup.isdouble(status), iup.isalt(status), iup.issys(status)
@@ -907,7 +1275,7 @@ local dropbutton = {}
 ---@class calendar: ihGUI
 ---@field today string
 ---@field value string
----@field weeknumbers "NO"|"YES" -- default "NO"
+---@field weeknumbers yes_no -- default "NO"
 local calendar = {}
 calendar.valuechanged_cb = valuechanged_cb
 calendar.map_cb = map_cb
@@ -920,7 +1288,7 @@ calendar.leavewindow_cb = leavewindow_cb
 calendar.k_any = k_any
 calendar.help_cb = help_cb
 
----@class canvas: ihGUI, ihDragNDrop
+---@class canvas: ihGUI, dragNDrop
 local canvas = {}
 ---Action generated when the canvas needs to be redrawn.
 ---@param self ihGUI
@@ -953,7 +1321,24 @@ canvas.leavewindow_cb = leavewindow_cb
 canvas.k_any = k_any
 canvas.help_cb = help_cb
 
----@class colorbar: ihGUI
+---Creates a color palette to enable a color selection from several samples. It can select one or two colors. The primary color is selected with the left mouse button, and the secondary color is selected with the right mouse button. You can double click a cell to change its color and you can double click the preview area to switch between primary and secondary colors.
+---@class colorbar: ihGUI, fontAttributes, standartAttributes, visualAttributes
+---@field cellN string -- Contains the color of the "N" cell. "N" can be from 0 to NUM_CELLS-1.
+---@field num_cells string|"16" -- [(non inheritable)]: Contains the number of color cells. Default: "16". The maximum number of colors is 256. The default colors use the same set of IupImage.
+---@field count string -- [(read-only) (non inheritable)]: same as NUM_CELLS but it is read-only. (since 3.3)
+---@field flat string|yes_no -- use a 1 pixel flat border instead of the default 3 pixels sunken border. When enabled is the same as setting SHADOWED=NO. Can be Yes or No. Default: No. (since 3.24)
+---@field flatcolor string|"0 0 0" -- color of the border when FLAT=Yes and the preview area borders. Default: "0 0 0". (since 3.24)
+---@field focusselect string -- when focus is changed the primary selection is also changed. (since 3.29)
+---@field num_parts string|"1" -- (non inheritable): Contains the number of lines or columns. Default: "1".
+---@field orientation string -- Controls the orientation. It can be "VERTICAL" or "HORIZONTAL". Default: "VERTICAL".
+---@field preview_size string -- (non inheritable): Fixes the size of the preview area in pixels. The default size is dynamically calculated from the size of the control. The size is reset to the default when SHOW_PREVIEW=NO.
+---@field show_preview string -- Controls the display of the preview area. Default: "YES".
+---@field show_secondary string -- Controls the existence of a secondary color selection. Default: "NO".
+---@field primary_cell string -- [(non inheritable)]: Contains the index of the primary color. Default "0" (black).
+---@field secondary_cell string -- [(non inheritable)]: Contains the index of the secondary color. Default "15" (white).
+---@field squared string -- Controls the aspect ratio of the color cells. Non square cells expand equally to occupy all of the control area. Default: "YES".
+---@field shadowed string -- Controls the 3D effect of the color cells. When enabled is the same as setting FLAT=NO. Default: "YES".
+---@field transparency string -- Contains a color that will be not rendered in the color palette. The color cell will have a white and gray chess pattern. It can be used to create a palette with less colors than the number of cells.
 local colorbar = {}
 colorbar.cell_cb = cell_cb
 colorbar.extended_cb = extended_cb
@@ -969,8 +1354,22 @@ colorbar.leavewindow_cb = leavewindow_cb
 colorbar.k_any = k_any
 colorbar.help_cb = help_cb
 
----@class colorbrowser: ihGUI
+---Creates an element for selecting a color. The selection is done using a cylindrical projection of the RGB cube. The transformation defines a coordinate color system called HSI, that is still the RGB color space but using cylindrical coordinates.
+---
+---H is for Hue, and it is the angle around the RGB cube diagonal starting at red (RGB=255 0 0).
+---
+---S is for Saturation, and it is the normal distance from the color to the diagonal, normalized by its maximum value at the specified Hue. This also defines a point at the diagonal used to define I.
+---
+---I is for Intensity, and it is the distance from the point defined at the diagonal to black (RGB=0 0 0). I can also be seen as the projection of the color vector onto the diagonal. But I is not linear, see Notes below.
+---
+---(Migrated from the IupControls library since IUP 3.24, it does not depend on the CD library anymore.)
+---
+---For a dialog that simply returns the selected color, you can use function IupGetColor or IupColorDlg.
+---@class colorbrowser: ihGUI, fontAttributes, standartAttributes, visualAttributes
+---@field rgb string -- [(non inheritable)]: the color selected in the control, in the "r g b" format; r, g and b are integers ranging from 0 to 255. Default: "255 0 0".
+---@field hsi string -- [(non inheritable)]: the color selected in the control, in the "h s i" format; h, s and i are floating point numbers ranging from 0-360, 0-1 and 0-1 respectively.
 local colorbrowser = {}
+-- TODO: add bgcolor
 colorbrowser.change_cb = change_cb
 colorbrowser.drag_cb = drag_cb
 ---Called after the value was interactively changed by the user. It is called whenever a CHANGE_CB or a DRAG_CB would also be called, it is just  called after them. (since 3.0)
@@ -987,7 +1386,41 @@ colorbrowser.leavewindow_cb = leavewindow_cb
 colorbrowser.k_any = k_any
 colorbrowser.help_cb = help_cb
 
+---Creates a date editing interface element, which can displays a calendar for selecting a date.
+---
+---In Windows is a native element. In GTK and Motif is a custom element. In Motif is not capable of displaying the calendar.
+------
+---[Notes:]
+---In GTK uses a custom control built with IUP elements, and in Windows uses DATETIMEPICK_CLASS.
+---
+---In Windows, when the user navigates to other pages in the calendar the date is not changed until the user actually selects a day.
+---
+---In Windows, FORMAT can have the following values, but other text in the format string must be enclosed in single quotes:
+---
+------
+---Element  Description
+------
+---"d"      The one- or two-digit day. (default)
+---"dd"     The two-digit day. Single-digit day values are preceded by a zero. (Set when ZEROPRECED=Yes)
+---"ddd"    The three-character weekday abbreviation.
+---"dddd"   The full weekday name.
+---"M"      The one- or two-digit month number. (default)
+---"MM"     The two-digit month number. Single-digit values are preceded by a zero. (Set when ZEROPRECED=Yes)
+---"MMM"    The three-character month abbreviation. (Set when MONTHSHORTNAMES=Yes)
+---"MMMM"   The full month name.
+---"yy"     The last two digits of the year (that is, 1996 would be displayed as "96"). (Not recommended)
+---"yyyy"   The full year (that is, 1996 would be displayed as "1996"). (default)
+------
 ---@class datepick: ihGUI
+---@field calendarweeknumbers string -- Shows the number of the week along the year in the calendar. Default: NO.
+---@field format string -- [Windows Only]: Flexible format for the date in Windows. For more information see "About Date and Time Picker Control" in the Windows SDK. The Windows control was configured to display date only without any time options. Default: "d'/'M'/'yyyy". See Noted bellow.
+---@field monthshortnames string -- [Windows Only]: Month display will use a short name instead of numbers. Must be set before ORDER. Default: NO. Names will be in the language of the system.
+---@field order string -- Day, month and year order. Can be any combination of "D", "M" and "Y" without repetition, and with all three letters. It will set the FORMAT attribute in Windows. It will NOT affect the VALUE attribute order. Default: "DMY".
+---@field separator string -- Separator between day, month and year. Must be set before ORDER in Windows. Default: "/".
+---@field showdropdown yes_no -- (write-only): opens or closes the dropdown calendar. Can be "YES" or "NO". Ignored if set before map. In Windows, it works only for NO. (since 3.28)
+---@field today string -- (read-only): Returns the date corresponding to today in VALUE format.
+---@field value string -- the current date always in the format "year/month/day" ("%d/%d/%d" in C). Can be set to "TODAY". Default value is the today date.
+---@field zeropreced yes_no -- Day and month numbers will be preceded by a zero. Must be set before ORDER in Windows. Default: No.
 local datepick = {}
 datepick.valuechanged_cb = valuechanged_cb
 datepick.map_cb = map_cb
@@ -1000,7 +1433,26 @@ datepick.leavewindow_cb = leavewindow_cb
 datepick.k_any = k_any
 datepick.help_cb = help_cb
 
----@class dial: ihGUI
+---Creates a dial for regulating a given angular variable. It inherits from IupCanvas.
+---
+---(Migrated from the IupControls library since IUP 3.24, it does not depend on the CD library anymore.)
+---[Notes:]
+---When the keyboard arrows are pressed and released the mouse press and the mouse release callbacks are called in this order. If you hold the key down the mouse move callback is also called for every repetition.
+---
+---When the wheel is rotated only the mouse move callback is called, and it increments the last angle the dial was rotated.
+---
+---In all cases the value is incremented or decremented by PI/10 (18 degrees).
+---
+---If you press Shift while using the arrow keys the increment is reduced to PI/100 (1.8 degrees). Press the Home key in the circular dial to reset to 0.
+---@class dial: ihGUI, fontAttributes, standartAttributes, visualAttributes
+---@field density string -- Number of lines per pixel in the handle of the dial. Default is "0.2".
+---@field expand yes_no -- The default is "NO".
+---@field flatcolor string -- Color of the border when FLAT=Yes. Default: "160 160 160". (since 3.24)
+---@field fgcolor string -- foreground color. The default value is "64 64 64". (appears in circular dial since 3.24)
+---@field size string -- [(non inheritable)]: the initial size is "16x80", "80x16" or "40x35" according to the dial orientation. Set to NULL to allow the automatic layout use smaller values.
+---@field orientation string -- [(creation only) (non inheritable)]:  dial layout configuration "VERTICAL", "HORIZONTAL" or "CIRCULAR". Default: "HORIZONTAL". Vertical increments when moved up, and decrements when moved down. Horizontal increments when moved right, and decrements when moved left. Circular increments when moved counter clock wise, and decrements when moved clock wise.
+---@field unit string -- unit of the angle. Can be "DEGREES" or "RADIANS". Default is "RADIANS". Used only in the callbacks.
+---@field value string -- (non inheritable): The dial angular value in radians always. The value is reset to zero when the interaction is started, except for ORIENTATION=CIRCULAR. When orientation is vertical or horizontal, the dial measures relative angles. When orientation is circular the dial measure absolute angles, where the origin is at 3 O'clock.
 local dial = {}
 dial.button_press_cb = button_press_cb
 dial.button_release_cb = button_release_cb
@@ -1019,13 +1471,52 @@ dial.leavewindow_cb = leavewindow_cb
 dial.k_any = k_any
 dial.help_cb = help_cb
 
----@class gauge: ihGUI
+---Creates a Gauge control. Shows a percent value that can be updated to simulate a progression. It inherits from IupCanvas.
+---
+---(Migrated from the IupControls library since IUP 3.24, it does not depend on the CD library anymore.)
+---[Notes:]
+---To replace a IupProgressBar by a IupGauge you should set RASTERSIZE=200x30 and SHOWTEXT=NO.
+---@class gauge: ihGUI, canvas, fontAttributes, standartAttributes, visualAttributes
+---@field backcolor string|nil -- (non inheritable): color of the background inside the borders. Predefined to "220 220 220. Can be NULL. When NULL it will use the parent's background color. (since 3.28)
+---@field canfocus yes_no -- enables the focus traversal of the control. Default: NO. (different from IupCanvas)
+---@field dashed yes_no -- Changes the style of the gauge for a dashed pattern. Default is "NO".
+---@field fgcolor string -- Controls the gauge and text color. Default: "0 120 220" (changed in 3.28).
+---@field flat yes_no -- use a 1 pixel flat border instead of the default 3 pixels sunken border. Can be Yes or No. Default: No. (since 3.21)
+---@field flatcolor string -- color of the border when FLAT=Yes. Default: "160 160 160". (since 3.21)
+---@field max string -- (non inheritable): Contains the maximum value. Default is "1".
+---@field min string -- (non inheritable): Contains the minimum value. Default is "0".
+---@field orientation string -- (creation only): can be "VERTICAL" or "HORIZONTAL". Default: "HORIZONTAL". Horizontal goes from left to right, and vertical from bottom to top. Width and height are swapped when orientation is set. (since 3.27)
+---@field padding string -- internal margin. Works just like the MARGIN attribute of the IupHbox and IupVbox containers, but uses a different name to avoid inheritance problems. Default value: "0x0". (since 3.0)
+---@field cpadding string -- same as PADDING but using the units of the SIZE attribute. It will actually set the PADDING attribute. (since 3.29)
+---@field showtext yes_no -- Indicates if the text inside the Gauge is to be shown or not. If the gauge is dashed the text is never shown. Possible values: "YES" or "NO". Default: "YES".
+---@field size string -- (non inheritable): The initial size is "120x14". Set to NULL to allow the automatic layout use smaller values.
+---@field text string -- (non inheritable): Contains a text to be shown inside the Gauge when SHOW_TEXT=YES. If it is NULL, the percentage calculated from VALUE will be used. If the gauge is dashed the text is never shown. When ORIENTATION=VERTICAL text is drawn in 90є.
+---@field value string -- (non inheritable): Contains a number between "MIN" and "MAX", controlling the current position.
 local gauge = {}
 gauge.map_cb = map_cb
 gauge.unmap_cb = unmap_cb
 gauge.destroy_cb = destroy_cb
 
----@class label: ihGUI
+---Creates a label interface element, which displays a separator, a text or an image.
+------
+---[Notes:]
+---Labels with images, texts or line separator can not change its behavior after mapped. But after map the image can be changed for another image, and the text for another text.
+---
+---In GTK uses GtkSeparator(GtkHSeparator/GtkVSeparator in GTK 2)/GtkImage/GtkLabel, in Windows uses WC_STATIC, and in Motif uses xmSeparator/xmLabel.
+---@class label: ihGUI, fontAttributes, standartAttributes, visualAttributes, dragNDrop
+---@field active yes_no -- The only difference between an active label and an inactive one is its visual feedback. Possible values: "YES, "NO". Default: "YES".
+---@field alignment string -- [(non inheritable)]: horizontal and vertical alignment. Possible values: "ALEFT", "ACENTER" and "ARIGHT",  combined to "ATOP", "ACENTER" and "ABOTTOM". Default: "ALEFT:ACENTER". Partial values are also accepted, like "ARIGHT" or ":ATOP", the other value will be used obtained from the default value. In Motif, vertical alignment is restricted to "ACENTER". (vertical alignment since 3.0)
+---@field dropfilestarget string -- [(Windows and GTK Only) (non inheritable)]: Enable or disable the drop of files. Default: NO, but if DROPFILES_CB is defined when the element is mapped then it will be automatically enabled. (since 3.0)
+---@field ellipsis yes_no -- [(Windows and GTK only)]: add an ellipsis: "..." to the text if there is not enough space to render the entire string. Can be "YES" or "NO". Default: "NO". (since 3.0) (GTK 2.6)
+---@field fgcolor string -- Text color. Default: the global attribute DLGFGCOLOR.
+---@field image string -- (non inheritable): Image name. If set before map defines the behavior of the label to contain an image. The natural size will be size of the image in pixels. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage.
+---@field iminactive string -- (non inheritable) [GTK and Motif only]: Image name of the element when inactive. If it is not defined then the IMAGE is used and the colors will be replaced by a modified version of the background color creating the disabled effect. GTK will also change the inactive image to look like other inactive objects.
+---@field markup yes_no -- [GTK only]: allows the title string to contains pango markup commands. Works only if a mnemonic is NOT defined in the title. Can be "YES" or "NO". Default: "NO".
+---@field padding string -- internal margin. Works just like the MARGIN attribute of the IupHbox and IupVbox containers, but uses a different name to avoid inheritance problems. Not used when SEPARATOR is used. Default value: "0x0". (since 3.0)
+---@field cpadding string -- same as PADDING but using the units of the SIZE attribute. It will actually set the PADDING attribute. (since 3.29)
+---@field separator string -- (creation only) (non inheritable): Turns the label into a line separator. Possible values: "HORIZONTAL" or "VERTICAL". When changed before mapping the EXPAND attribute is set to "HORIZONTALFREE" or "VERTICALFREE" accordingly. (Since 3.11 changed to FREE based expand)
+---@field title string -- (non inheritable): Label's text. If SEPARATOR or IMAGE are not defined before map, then the default behavior is to contain a text. The label behavior can not be changed after map. The natural size will be larger enough to include all the text in the selected font, even using multiple lines. The '\n' character is accepted for line change. The "&" character can be used to define a mnemonic, the next character will be used as key. Use "&&" to show the "&" character instead of defining a mnemonic. The next control from the label will be activated from any control in the dialog using the "Alt+key" combination. (mnemonic support since 3.0)
+---@field wordwrap yes_no -- [Windows and GTK only]: enables or disable the wrapping of lines that does not fits in the label. Can be "YES" or "NO". Default: "NO". Can only set WORDWRAP=YES if ALIGNMENT=ALEFT. (since 3.0)
 local label = {}
 label.button_cb = button_cb
 label.motion_cb = motion_cb
@@ -1052,7 +1543,17 @@ flatlabel.leavewindow_cb = leavewindow_cb
 local flatseparator = {}
 --TODO: iupcnavas callbacks write
 
----@class link: ihGUI
+---Creates a label that displays an underlined clickable text. It inherits from IupLabel.
+---[Notes:]
+---When the cursor is over the text, it is changed to the HAND cursor.
+---
+---If the callback is not defined the IupHelp function is called with the given URL.
+---
+---The IupLabel callbacks BUTTON_CB, ENTERWINDOW_CB and LEAVEWINDOW_CB are used internally.
+---@class link: ihGUI, label
+---@field url string -- the destination address of the link. Can be any text. If IupHelp is used should be a valid URL. It can be NULL. It will set the URL attribute.
+---@field title string -- Text to be shown on the link. It can be NULL. It will set the TITLE attribute.
+---@field fgcolor string -- Text color. Default: the global attribute LINKFGCOLOR.
 local link = {}
 ---Action generated when the link is activated.
 ---@param self ihGUI
@@ -1060,7 +1561,91 @@ local link = {}
 ---@return `iup.CLOSE`|`iup.DEFAULT` -- `iup.CLOSE` will be processed. If returns `iup.DEFAULT` or it is not defined, the IupHelp function will be called
 link.action = function (self, url) end
 
----@class list: ihGUI
+---Creates an interface element that displays a list of items. The list can be visible or can be dropped down. It also can have an edit box for text input. So it is a 4 in 1 element. In native systems the dropped down case is called Combo Box.
+------
+---"1": First item in the list.
+---"2": Second item in the list.
+---"3": Third item in the list.
+---...
+---"id": idth item in the list.
+---    (non inheritable) The values can be any text. Items before "1" are ignored. Before map the first item with a NULL is considered the end of the list and items can be set in any order. After map, there are a few rules:
+---        if "1" is set to NULL, all items are removed.
+---        if "id" is set to NULL, all items after id are removed.
+---        if "id" is between the first and the last item, the current idth item is replaced. The effect is the same as removing the old item and inserting a new one at the old position.
+---        if "count+1" is set then it is appended after the last item.
+---        Items after "count+1" are ignored. (since 3.0)
+------
+---[Notes:]
+---Text is always left aligned.
+---
+---When the list has focus use the arrow keys to move focus from one item to another. When DROPDOWN=Yes use the Alt+Down key combination to show the dropdown list. While the dropdown is shown the arrow key may change the current value depending on the system, on Windows will directly change the current value, on GTK will change the current value only if Enter is pressed. In all systems the dropdown list is closed by using the Alt+Up key combination, or by pressing Enter or Esc keys (while the dropdown list is shown the DEFAULTENTER and DEFAULTESC buttons will not be called (fixed in 3.14)).
+---
+---The GETFOCUS_CB and KILLFOCUS_CB callbacks behave differently depending on the list configuration and on the native system:
+---     If DROPDOWN=NO and EDITBOX=YES, then the list never gets the focus, the callbacks are called only when the edit box is clicked.
+---     In Motif if DROPDOWN=YES then when the dropdown button is clicked the list looses its focus and when the dropped list is closed the list regain the focus, also when that happen if the list looses its focus to another control the kill focus callback is not called.
+---     In GTK, if DROPDOWN=YES and EDITBOX=NO, both callbacks are called only when navigating with the keyboard (tip: if you need those callbacks with mouse navigation set EDITBOX=YES and READONLY=YES). Also in GTK, if DROPDOWN=YES and EDITBOX=YES then when the dropdown button is clicked the list looses its focus and it gets it back only if the edit box is clicked.
+---     In Windows, if EDITBOX=YES then the tooltips are shown only when the cursor is near the control border or at the dropdown arrow. Also the selection and caret attributes are not preserved if the list loses its focus, or in other words these attributes are only useful in Windows if the list has the focus.
+---
+---IMPORTANT: In Windows when DROPDOWN=Yes the vertical size is controlled by the system, and has the height just right to include the borders and the text. So the User height from RASTERSIZE or SIZE will be always ignored.
+---
+---In Windows, list items are limited to 255 pixels height.
+---
+---In GTK older than 2.12, the editbox of a dropdown will not follow the list attributes: FONT, BGCOLOR, FGCOLOR and SPACING.
+---
+---Clicking and dragging a item: if SHOWDRAGDROP=Yes starts a drag. When mouse is released, the DRAGDROP_CB callback is called. If the callback does not exist or if it returns IUP_CONTINUE then the item is moved to the new position. If Ctrl is pressed then the node is copied instead of moved. In Windows and GTK, drag is performed with the left mouse button. In Motif, the middle mouse button is used to drag. (since 3.7)
+---
+---In GTK uses GtkComboBox/GtkTreeView, in Windows uses COMBOBOX/LISTBOX, and in Motif uses xmComboBox/xmList.
+---[Utility functions:]
+--- TODO: this is a C functions, but few this functions are in this lua lib
+---These functions can be used to set and get attributes from the element:
+---
+---void  IupSetAttributeId(Ihandle *ih, const char* name, int id, const char* value);
+---char* IupGetAttributeId(Ihandle *ih, const char* name, int id);
+---int   IupGetIntId(Ihandle *ih, const char* name, int id);
+---float IupGetFloatId(Ihandle *ih, const char* name, int id);
+---void  IupSetfAttributeId(Ihandle *ih, const char* name, int id, const char* format, ...);
+---void  IupSetIntId(Ihandle* ih, const char* name, int id, int value);
+---void  IupSetFloatId(Ihandle* ih, const char* name, int id, float value);
+---They work just like the respective traditional set and get functions. But the attribute string is complemented with the id value. For ex:
+---
+---IupSetAttributeId(ih, "", 3, value) == IupSetAttribute(ih, "3", value)
+---IupSetAttributeId(ih, "INSERTITEM", 8, value) == IupSetAttribute(ih, "INSERTITEM8", value)
+---But these functions are faster than the traditional functions because they do not need to parse the attribute name string and the application does not need to concatenate the attribute name with the id.
+---@class list: ihGUI, fontAttributes, standartAttributes, visualAttributes, dragNDrop
+---@field [integer] string -- "1" - first item in the list. [integer] - [integer] item in the list
+---@field appenditem string -- (write-only): inserts an item after the last item. Ignored if set before map. (since 3.0)
+---@field autohide yes_no -- scrollbars are shown only if they are necessary. Default: "YES".
+---@field autoredraw yes_no -- [Windows] (non inheritable): automatically redraws the list when something has change. Set to NO to add many items to the list without updating the display. Default: "YES". (since 3.3)
+---@field bgcolor string -- Background color of the text. Default: the global attribute TXTBGCOLOR. In GTK does nothing when DROPDOWN=Yes.
+---@field canfocus yes_no -- (creation only) (non inheritable): enables the focus traversal of the control. In Windows the control will still get the focus when clicked. Default: YES. (since 3.0)
+---@field propagatefocus yes_no -- (non inheritable): enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: NO. (since 3.23)
+---@field count string -- (read-only) (non inheritable): returns the number of items. Before mapping it counts the number of non NULL items before the first NULL item. (since 3.0)
+---@field dragdroplist  yes_no -- (non inheritable): prepare the Drag & Drop callbacks to support drag and drop of items between lists (IupList or IupFlatList), in the same IUP application. Drag & Drop attributes still need to be set in order to activate the drag & drop support, so the application can control if this list will be source and/or target. Default: NO. (since 3.10)
+---@field dropfilestargeT yes_no -- [Windows and GTK Only] (non inheritable): Enable or disable the drop of files. Default: NO, but if DROPFILES_CB is defined when the element is mapped then it will be automatically enabled. (since 3.0)
+---@field dropdown yes_no -- (creation only): Changes the appearance of the list for the user: only the selected item is shown beside a button with the image of an arrow pointing down. To select another option, the user must press this button, which displays all items in the list. Can be "YES" or "NO". Default "NO".
+---@field dropexpand yes_no -- [Windows Only]: When DROPDOWN=Yes the size of the dropped list will expand to include the largest text. Can be "YES" or "NO". Default: "YES".
+---@field editbox yes_no -- (creation only): Adds an edit box to the list. Can be "YES" or "NO". Default "NO".
+---@field fgcolor string -- Text color. Default: the global attribute TXTFGCOLOR.
+---@field imageID string -- (non inheritable) (write only) [Windows and GTK Only]: image name to be used in the specified item, where id is the specified item starting at 1. The item must already exist. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage. The image is always displayed at the left of the text and only when SHOWIMAGE=Yes. When EDITBOX=Yes the image is not display at the edit box. Images don't need to have the same size. In Windows, list items are limited to 255 pixels height. (since 3.6)
+---@field insertitemID string -- (write-only): inserts an item before the given id position. id starts at 1. If id=COUNT+1 then it will append after the last item. Ignored if out of bounds. Ignored if set before map. (since 3.0)
+---@field multiple yes_no -- (creation only): Allows selecting several items simultaneously (multiple list). Default: "NO". Only valid when EDITBOX=NO and DROPDOWN=NO.
+---@field removeitem string -- (write-only): removes the given value. value starts at 1. If value is NULL or "ALL" removes all the items. Ignored if set before map. (since 3.0)
+---@field scrollbar yes_no -- (creation only): Associates automatic scrollbars to the list when DROPDOWN=NO. Can be: "YES" or "NO" (none). Default: "YES". For all systems, when SCROLLBAR=YES the natural size will always include its size even if the native system hides the scrollbars. If AUTOHIDE=YES scrollbars are shown only if they are necessary, by default AUTOHIDE=YES. In Motif, SCROLLBAR=NO is not supported and if EDITBOX=YES the horizontal scrollbar is never shown.;%\n When DROPDOWN=YES the scrollbars are system dependent, and do NOT depend on the SCROLLBAR or AUTOHIDE attributes. Usually the scrollbars are shown if necessary. In GTK, scrollbars are never shown and all items are always visible. In Motif, the horizontal scrollbar is never shown. In Windows, if DROPEXPAND=YES then the horizontal scrollbar is never shown.
+---@field scrollvisible string -- (read-only) [Windows Only]: Returns which scrollbars are visible at the moment. Can be: YES (both), VERTICAL, HORIZONTAL, NO. (since 3.31)
+---@field showdragdrop yes_no -- (creation only) (non inheritable): enables the internal drag and drop of items in the same list, and enables the DRAGDROP_CB callback. Default: "NO". Works only if DROPDOWN=NO and MULTIPLE=NO. Drag & Drop attributes are NOT used. (since 3.7)
+---@field showdropdown yes_no -- (write-only): opens or closes the dropdown list. Can be "YES" or "NO". Valid only when DROPDOWN=YES. Ignored if set before map.
+---@field showimage yes_no -- (creation only) [Windows and GTK Only]: enables the use of an image for each item. Can be "YES" or "NO". Ignored if set after map. (since 3.6)
+---@field size string -- Size of the list. The Natural Size is defined by the number of elements in the list and the with of the largest item, the default has room for 5 characters in 1 item. In IUP 3, the Natural Size ignores the list contents if VISIBLECOLUMNS or VISIBLELINES attributes are defined. The text in the edit box is ignored when considering the list contents.
+---@field sort yes_no -- SORT (creation only): force the list to be alphabetically sorted. When using INSERTITEMn or APPENDITEM the position will be ignored. (since 3.0)
+---@field topitem string -- (write-only): position the given item at the top of the list or near to make it visible. Valid only when DROPDOWN=NO. (since 3.0)
+---@field spacing string -- internal padding for each item. Notice that vertically the distance between each item will be actually 2x the spacing. It also affects the horizontal margin of the item. In Windows, the text is aligned at the top left of the item always. Valid only when DROPDOWN=NO. (since 3.0)
+---@field cspacing string -- same as SPACING but using the units of the vertical part of the SIZE attribute. It will actually set the SPACING attribute. (since 3.29)
+---@field value string -- (non inheritable): Depends on the DROPDOWN+EDITBOX combination: EDITBOX=YES: Text entered by the user. MULTIPLE=YES: Sequence of '+' and '-' symbols indicating the state of each item. When setting this value, the user must provide the same amount of '+' and '-' symbols as the amount of items in the list, otherwise the specified items will be deselected. Others: Integer number representing the selected item in the list (begins at 1). It can be zero if there is no selected item. (In Motif when DROPDOWN=YES there is always an item selected, except when the list is empty). Should return a non NULL value, even when the list is empty or the text box is empty. It can be NULL when no item selected (since 3.0).
+---@field valuestring string -- (non inheritable): changes or retrieves the value attribute using a string of an item. Works only when EDITBOX=NO and DROPDOWN=YES, or DROPDOWN=NO and MULTIPLE=NO. When set it will search for the first item with the same string. (since 3.12)
+---@field valuemasked string -- (non inheritable) (write-only): sets VALUE but first checks if it is validated by MASK. If not does nothing. Works only when EDITBOX=YES. (since 3.13)
+---@field visibleitems string -- [Windows and Motif Only]: Number of items that are visible when DROPDOWN=YES is used for the dropdown list. Default: 5.
+---@field visiblecolumns string -- Defines the number of visible columns for the Natural Size, this means that will act also as minimum number of visible columns. It uses a wider character size then the one used for the SIZE attribute so strings will fit better without the need of extra columns. Set this attribute to speed Natural Size computation for very large lists. (since 3.0)
+---@field visiblelines string -- When DROPDOWN=NO defines the number of visible lines for the Natural Size, this means that will act also as minimum number of visible lines. (since 3.0)
 local list = {}
 ---Action generated when the link is activated.
 ---@param self ihGUI
@@ -1115,21 +1700,103 @@ list.k_any = k_any
 list.help_cb = help_cb
 --TODO: drag&drop atrributes all
 
----@class flatlist: ihGUI
+---@class flatlist: ihGUI, canvas
 local flatlist = {}
 --TODO:
 
----@class progressbar: ihGUI
+---Creates a progress bar control. Shows a percent value that can be updated to simulate a progression.
+---
+---It is similar of IupGauge, but uses native controls internally. Also does not have support for text inside the bar.
+---[Notes:]
+---In GTK uses GtkProgressBar, in Windows uses PROGRESS_CLASS, and in Motif uses xmScale.
+---@class progressbar: ihGUI, fontAttributes, standartAttributes, visualAttributes
+---@field bgcolor string -- [Windows Classic and Motif only]: controls the background color. Default: the global attribute DLGBGCOLOR.
+---@field dashed yes_no -- (creation only in Windows) [Windows and GTK only]: Changes the style of the progress bar for a dashed pattern. Default is "NO". In Windows it is not supported since Windows Vista when using Visual Styles.
+---@field fgcolor string -- [Windows Classic and Motif only]: Controls the bar color. Default: the global attribute DLGFGCOLOR.
+---@field marquee yes_no -- (creation): displays an undefined state. Default: NO. You can set the attribute after map but only to start or stop the animation. In Windows it will work only if using Visual Styles.
+---@field max string -- (non inheritable): Contains the maximum value. Default is "1". The control display is not updated, must set VALUE attribute to update.
+---@field min string -- (non inheritable): Contains the minimum value. Default is "0". The control display is not updated, must set VALUE attribute to update.
+---@field orientation string -- (creation only): can be "VERTICAL" or "HORIZONTAL". Default: "HORIZONTAL". Horizontal goes from left to right, and vertical from bottom to top.
+---@field rastersize string -- The initial size is defined as "200x30". Set to NULL to allow the use of smaller values in the layout computation.
+---@field value string -- (non inheritable): Contains a number between "MIN" and "MAX", controlling the current position.
 local progressbar = {}
 progressbar.map_cb = map_cb
 progressbar.unmap_cb = unmap_cb
 progressbar.destroy_cb = destroy_cb
 
----@class spin: ihGUI
+---This functions will create a control set with a vertical box containing two buttons, one with an up arrow and the other with a down arrow, to be used to increment and decrement values.
+---
+---Unlike the SPIN attribute of the IupText element, the IupSpin element can NOT automatically increment the value and it is NOT inserted inside the IupText area. But they can be used with any element.
+---[Notes:]
+---The spinbox can be created with no elements and be dynamic filled using IupAppend or IupInsert
+---@class spin: ihGUI, fontAttributes, visualAttributes, standartAttributes
 local spin = {}
 spin.spin_cb = spin_cb
 
----@class text: ihGUI
+---Creates an editable text field.
+---[Notes:]
+---When MULTILINE=YES the Enter key will add a new line, and the Tab key will insert a Tab. So the "DEFAULTENTER" button will not be processed when the element has the keyboard focus, also to change focus to the next element press <Ctrl>+<Tab>.
+---
+---In Windows, if you press a Ctrl+key combination that is not supported by the control, then a beep is sound.
+---
+---When using UTF-8 strings in GTK be aware that all attributes are indexed by characters, NOT by byte index, because some characters in UTF-8 can use more than one byte. This also applies to Windows if FORMATTING=YES depending on the Windows codepage (for example East Asian codepage where some characters take two bytes).
+---
+---Internal Drag&Drop support is enabled by default. But in Windows the internal Drag&Drop is enabled only if FORMATTING=YES. In GTK the internal Drag&Drop can NOT be disabled, so it will conflict with the Drag & Drop attributes and callbacks.
+---
+---In GTK uses GtkTextView/GtkEntry/GtkSpinButton, in Windows uses RICHEDIT_CLASS (formatting)/WC_EDIT, and in Motif uses xmText/xmTextField, for Single/Multiline.
+---@class text: ihGUI, fontAttributes, standartAttributes, visualAttributes, dragNDrop
+---@field alignment string -- [Windows and GTK Only] (non inheritable): horizontal text alignment. Possible values: "ALEFT", "ARIGHT", "ACENTER". Default: "ALEFT". In Motif, text is always left aligned.
+---@field append string -- (write-only): Inserts a text at the end of the current text. In the Multiline, if APPENDNEWLINE=YES, a "\n" character will be automatically inserted before the appended text if the current text is not empty(APPENDNEWLINE default is YES). Ignored if set before map.
+---@field bgcolor string -- Background color of the text. Default: the global attribute TXTBGCOLOR. Ignored in GTK when MULTILINE=NO.
+---@field border string -- (creation only): Shows a border around the text. Default: "YES".
+---@field canfocus string -- (creation only) (non inheritable): enables the focus traversal of the control. In Windows the control will still get the focus when clicked. Default: YES. (since 3.0)
+---@field propagatefocus string -- (non inheritable): enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: NO. (since 3.23)
+---@field caret string -- (non inheritable): Character position of the insertion point. Its format depends in MULTILINE=YES. The first position, lin or col, is "1". For multiple lines: a string with the "lin,col" format, where lin and col are integer numbers corresponding to the caret's position. For single line: a string in the "col" format, where col is an integer number corresponding to the caret's position. When lin is greater than the number of lines, the caret is placed at the last line. When col is greater than the number of characters in the given line, the caret is placed after the last character of the line. If the caret is not visible the text is scrolled to make it visible. In Windows, if the element does not have the focus the returned value is the position of the first character of the current selection. The caret is only displayed if the element has the keyboard focus, but its position can be changed even if not visible. When changed it will also change the selection but the text will be scrolled only when it receives the focus. See the Notes below if using UTF-8 strings in GTK.
+---@field caretpos string -- (non inheritable): Also the character position of the insertion point, but using a zero based character unique index "pos". Useful for indexing the VALUE string. See the Notes below if using UTF-8 strings in GTK. (since 3.0)
+---@field changecase string -- (non inheritable): Change case according to given conversion. Can be UPPER, LOWER, TOGGLE, or TITLE. TITLE case change first letter of words separated by spaces to upper case others to lower case, but first letter is changed only if word has more than 3 characters, for instance: "Best of the World". Supports Latin-1 encoding only, even when using UTF-8. Does not depends on current locale. (since 3.28)
+---@field clipboard string -- (write-only): clear, cut, copy or paste the selection to or from the clipboard. Values: "CLEAR", "CUT", "COPY" or "PASTE". In Windows UNDO is also available, and REDO is available when FORMATTING=YES. (since 3.0)
+---@field count string -- (read-only): returns the number of characters in the text, including the line breaks. (since 3.5)
+---@field cuebanner string -- [Windows and GTK Only] (non inheritable): a text that is displayed when there is no text at the control. It works as a textual cue, or tip to prompt the user for input. Valid only for MULTILINE=NO, and works only when Visual Styles are enabled. (since 3.0) [GTK 3.2] (GTK support added in IUP 3.20)
+---@field dropfilestarget yes_no -- [Windows and GTK Only] (non inheritable): Enable or disable the drop of files. Default: NO, but if DROPFILES_CB is defined when the element is mapped then it will be automatically enabled. (since 3.0)
+---@field fgcolor string -- Text color. Default: the global attribute TXTFGCOLOR.
+---@field filter string -- [Windows Only] (non inheritable): allows a custom filter to process the characters: Can be LOWERCASE, UPPERCASE or NUMBER (only numbers allowed). (since 3.0)
+---@field formatting string -- [Windows and GTK Only] (non inheritable): When enabled allow the use of text formatting attributes. In GTK is always enabled, but only when MULTILINE=YES. Default: NO. (since 3.0)
+---@field insert string -- (write-only): Inserts a text in the caret's position, also replaces the current selection if any. Ignored if set before map.
+---@field linecount string -- (read-only): returns the number of lines in the text. When MULTILINE=NO returns always "1". (since 3.5)
+---@field linevalue string -- (read-only): returns the text of the line where the caret is. It does not include the "\n" character. When MULTILINE=NO returns the same as VALUE. (since 3.5)
+---@field loadrtf string -- (write-only) [Windows Only]: loads formatted text from a Rich Text Format file given its filename. The attribute LOADRTFSTATUS is set to OK or FAILED after the file is loaded. (since 3.28)
+---@field savertf string -- (write-only) [Windows Only]: saves formatted text to a Rich Text Format file given its filename.  The attribute SAVERTFSTATUS is set to OK or FAILED after the file is saved. (since 3.28)
+---@field mask string -- (non inheritable): Defines a mask that will filter interactive text input.
+---@field multiline yes_no -- (creation only) (non inheritable): allows the edition of multiple lines. In single line mode some characters are invalid, like "\t", "\r" and "\n". Default: NO. When set to Yes will also reset the SCROLLBAR attribute to Yes.
+---@field nc string -- Maximum number of characters allowed for keyboard input, larger text can still be set using attributes. The maximum value is the limit of the VALUE attribute. The "0" value is the same as maximum. Default: maximum.
+---@field nohidesel yes_no -- [Windows Only]: do not hide the selection when the control loses its focus. Default: Yes. (since 3.16)
+---@field overwrite yes_no -- [Windows and GTK Only] (non inheritable): turns the overwrite mode ON or OFF. Works only when FORMATTING=YES. (since 3.0)
+---@field padding string -- internal margin. Works just like the MARGIN attribute of the IupHbox and IupVbox containers, but uses a different name to avoid inheritance problems. Default value: "0x0". In Windows, only the horizontal value is used. (since 3.0) (GTK 2.10 for single line)
+---@field cpadding string -- same as PADDING but using the units of the SIZE attribute. It will actually set the PADDING attribute. (since 3.29)
+---@field password yes_no -- (creation only) [Windows and GTK Only] (non inheritable): Hide the typed character using an "*". Default: "NO".
+---@field readonly yes_no -- Allows the user only to read the contents, without changing it. Restricts keyboard input only, text value can still be changed using attributes. Navigation keys are still available. Possible values: "YES", "NO". Default: NO.
+---@field scrollbar yes_no -- (creation only): Valid only when MULTILINE=YES. Associates an automatic horizontal and/or vertical scrollbar to the multiline. Can be: "VERTICAL", "HORIZONTAL", "YES" (both) or "NO" (none). Default: "YES". For all systems, when SCROLLBAR!=NO the natural size will always include its size even if the native system hides the scrollbar. If AUTOHIDE=YES scrollbars are visible only if they are necessary, by default AUTOHIDE=NO. In Windows when FORMATTING=NO, AUTOHIDE is not supported. In Motif AUTOHIDE is not supported.
+---@field scrollto string -- (non inheritable, write only): Scroll the text to make the given character position visible. It uses the same format and reference of the CARET attribute ("lin:col" or "col" starting at 1). In Windows, when FORMATTING=Yes "col" is ignored. (since 3.0)
+---@field scrolltopos string -- (non inheritable, write only): Scroll the text to make the given character position visible. It uses the same format and reference of the CARETPOS attribute ("pos" starting at 0). (since 3.0)
+---@field scrollvisIBLE yes_no -- (read-only) [Windows Only]: Returns which scrollbars are visible at the moment. Can be: YES (both), VERTICAL, HORIZONTAL, NO. (since 3.31)
+---@field selectedtEXT yes_no -- (non inheritable): Selection text. Returns NULL if there is no selection. When changed replaces the current selection. Similar to INSERT, but does nothing if there is no selection.
+---@field selection string -- (non inheritable): Selection interval in characters. Returns NULL if there is no selection. Its format depends in MULTILINE=YES. The first position, lin or col, is "1". For multiple lines: a string in the "lin1,col1:lin2,col2" format, where lin1, col1, lin2 and col2 are integer numbers corresponding to the selection's interval. col2 correspond to the character after the last selected character. For single line: a string in the "col1:col2" format, where col1 and col2 are integer numbers corresponding to the selection's interval. col2 correspond to the character after the last selected character. In Windows, when changing the selection the caret position is also changed. The values ALL and NONE are also accepted independently of MULTILINE (since 3.0). See the Notes below if using UTF-8 strings in GTK.
+---@field selectionPOS string -- (non inheritable): Same as SELECTION but using a zero based character index "pos1:pos2". Useful for indexing the VALUE string. The values ALL and NONE are also accepted. See the Notes below if using UTF-8 strings in GTK. (since 3.0)
+---@field size string -- (non inheritable): Since the contents can be changed by the user, the Natural Size is not affected by the text contents (since 3.0). Use VISIBLECOLUMNS and VISIBLELINES to control the Natural Size.
+---@field spin yes_no -- (non inheritable, creation only): enables a spin control attached to the element. Default: NO. The spin increments and decrements an integer number. The editing in the element is still available. (since 3.0)
+---@field spinvalue string -- (non inheritable): the current value of the spin. The value is limited to the minimum and maximum values.
+---@field spinmax string -- (non inheritable): the maximum value. Default: 100.
+---@field spinmin string -- (non inheritable): the minimum value. Default: 0.
+---@field spininc string -- (non inheritable): the increment value. Default: 1.
+---@field spinalign string -- (creation only): the position of the spin. Can be LEFT or RIGHT. Default: RIGHT. In GTK is always RIGHT.
+---@field spinwrap string -- (creation only): if the position reach a limit it continues from the opposite limit. Default: NO.
+---@field spinauto string -- (creation only): enables the automatic update of the text contents. Default: YES. Use SPINAUTO=NO and the VALUE attribute during SPIN_CB to control the text contents when the spin is incremented.
+---@field tabsize string -- [Windows and GTK Only]: Valid only when MULTILINE=YES. Controls the number of characters for a tab stop. Default: 8.
+---@field value string -- (non inheritable): Text entered by the user. The '\n' character indicates a new line, valid only when MULTILINE=YES. After the element is mapped and if there is no text will return the empty string "".
+---@field valuemasked string -- (non inheritable) (write-only): sets VALUE but first checks if it is validated by MASK. If not does nothing. (since 3.4)
+---@field visiblecolumns string -- Defines the number of visible columns for the Natural Size, this means that will act also as minimum number of visible columns. It uses a wider character size than the one used for the SIZE attribute so strings will fit better without the need of extra columns. As for SIZE you can set to NULL after map to use it as an initial value. Default: 5 (since 3.0)
+---@field visiblelines string -- When MULTILINE=YES defines the number of visible lines for the Natural Size, this means that will act also as minimum number of visible lines. As for SIZE you can set to NULL after map to use it as an initial value. Default: 1 (since 3.0)
+---@field wordwrap yes_no -- (creation only): Valid only when MULTILINE=YES. If enabled will force a word wrap of lines that are greater than the with of the control, and the horizontal scrollbar will be removed. Default: NO.
 local text = {}
 ---Action generated when the text is edited, but before its value is actually changed. Can be generated when using the keyboard, undo system or from the clipboard.
 ---@param self ihGUI
@@ -1158,8 +1825,39 @@ text.k_any = k_any
 text.help_cb = help_cb
 -- TODO: drag&drop
 
----@class toggle: ihGUI
+---Creates the toggle interface element. It is a two-state (on/off) button that, when selected, generates an action that activates a function in the associated application. Its visual representation can contain a text or an image.
+------
+---[Notes:]
+---Toggle with image or text can not change its behavior after mapped. This is a creation attribute. But after creation the image can be changed for another image, and the text for another text.
+---
+---Toggles are activated using the Space key.
+---
+---To build a set of mutual exclusive toggles, insert them in an IupRadio container. They must be inserted before creation, and their behavior can not be changed. If you need to dynamically remove toggles that belongs to a radio in Windows, then put the radio inside an IupFrame that has a title.
+---
+---A toggle that is a child of an IupRadio automatically receives a name when its is mapped into the native system. (since 3.16)
+---
+---In GTK uses GtkRadioButton/GtkCheckButton/GtkToggleButton, in Windows uses WC_BUTTON, and in Motif uses xmToggleButton.
+---@class toggle: ihGUI, standartAttributes, visualAttributes
+---@field alignment string -- (non inheritable): horizontal and vertical alignment when IMAGE is defined. Possible values: "ALEFT", "ACENTER" and "ARIGHT",  combined to "ATOP", "ACENTER" and "ABOTTOM". Default: "ACENTER:ACENTER". Partial values are also accepted, like "ARIGHT" or ":ATOP", the other value will be obtained from the default value. In Motif, vertical alignment is restricted to "ACENTER". In Windows works only when Visual Styles is active. Text is always left aligned. (since 3.0)
+---@field bgcolor string -- Background color of toggle mark when displaying a text. The text background is transparent, it will use the background color of the native parent. When displaying an image in Windows the background is ignored and the system color is used. Default: the global attribute DLGBGCOLOR.
+---@field canfocus yes_no -- (creation only) (non inheritable): enables the focus traversal of the control. In Windows the control will still get the focus when clicked. Default: YES. (since 3.0)
+---@field propagatefocus yes_no -- (non inheritable): enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: NO. (since 3.23)
+---@field fgcolor string -- Color of the text shown on the toggle. In Windows, when using Visual Styles FGCOLOR is ignored. Default: the global attribute DLGFGCOLOR.
+---@field flat yes_no -- (creation only): Hides the toggle borders until the mouse enter the toggle area when the toggle is not checked. If the toggle is checked, then the borders will be shown even if flat is enabled. Used only when IMAGE is defined. Can be YES or NO. Default: NO. (since 3.3)
+---@field image string -- (non inheritable): Image name. When the IMAGE attribute is defined, the TITLE is not shown. This makes the toggle looks just like a button with an image, but its behavior remains the same. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage. (GTK 2.6)
+---@field impress string -- (non inheritable): Image name of the pressed toggle. Unlike buttons, toggles always display the button border when IMAGE and IMPRESS are both defined. (GTK 2.6)
+---@field iminactive string -- (non inheritable): Image name of the inactive toggle. If it is not defined but IMAGE is defined then for inactive toggles the colors will be replaced by a modified version of the background color creating the disabled effect. (GTK 2.6)
+---@field markup yes_no -- [GTK only]: allows the title string to contains pango markup commands. Works only if a mnemonic is NOT defined in the title. Can be "YES" or "NO". Default: "NO".
+---@field padding string -- internal margin when IMAGE is defined. Works just like the MARGIN attribute of the IupHbox and IupVbox containers, but uses a different name to avoid inheritance problems. Default value: "0x0". Value can be DEFAULTBUTTONPADDING, so the global attribute of this name will be used instead (since 3.29). (since 3.0)
+---@field radio yes_no -- (read-only): returns if the toggle is inside a radio. Can be "YES" or "NO". Valid only after the element is mapped, before returns NULL. (since 3.0)
+---@field ignoreradio yes_no -- (non inheritable): when set the toggle will not behave as a radio when inside an IupRadio hierarchy. (since 3.21)
+---@field rightbutton yes_no -- (Windows Only) (creation only): place the check button at the right of the text. Can be "YES" or "NO". Default: "NO".
+---@field value string -- (non inheritable): Toggle's state. Values can be "ON", "OFF" or "TOGGLE". If 3STATE=YES then can also be "NOTDEF". Default: "OFF". The TOGGLE option will invert the current state (since 3.7). In GTK if you change the state of a radio, the unchecked toggle will receive an ACTION callback notification. Can only be set to ON if the toggle is inside a radio, it will automatically set to OFF the previous toggle that was ON in the radio. The first toggle inside an IupRadio will have its value set to ON after map.
+---@field title string -- (non inheritable): Toggle's text. If IMAGE is not defined before map, then the default behavior is to contain a text. The button behavior can not be changed after map. The natural size will be larger enough to include all the text in the selected font, even using multiple lines, plus the button borders or check box if any. The '\n' character is accepted for line change. The "&" character can be used to define a mnemonic, the next character will be used as key. Use "&&" to show the "&" character instead on defining a mnemonic. The toggle can be activated from any control in the dialog using the "Alt+key" combination. (mnemonic support since 3.0)
 local toggle = {}
+---@type yes_no
+---(creation only): Enable a three state toggle. Valid for toggles with text only and that do not belong to a radio. Can be "YES" or NO". Default: "NO".
+toggle['3state'] = nil
 ---Action generated when the toggle's state (on/off) was changed. The callback also receives the toggle's state.
 ---@param self ihGUI
 ---@param state integer -- `1` if the toggle's state was shifted to on; `0` if it was shifted to off
@@ -1180,7 +1878,7 @@ toggle.help_cb = help_cb
 local flattoggle = {}
 -- TODO: canvas
 
----@class tree: ihGUI
+---@class tree: ihGUI, standartAttributes, visualAttributes
 local tree = {}
 -- TODO:
 tree.button_cb = button_cb
@@ -1200,7 +1898,27 @@ tree.help_cb = help_cb
 local flattree = {}
 -- TODO: canvas
 
----@class val: ihGUI
+---Creates a Valuator control. Selects a value in a limited interval. Also known as Scale or Trackbar in native systems.
+---[Notes:]
+---This control replaces the old IupVal implemented in the additional controls. The old callbacks are still supported but called only if the VALUECHANGED_CB callback is not defined. The MOUSEMOVE_CB callback is only called when the user moves the handler using the mouse. The BUTTON_PRESS_CB callback is called only when the user press a key that changes the position of the handler. The BUTTON_RELEASE_CB callback is called only when the user release the mouse button after moving the handler.
+---
+---In Motif, after the user clicks the handler a KILLFOCUS will be ignored when the control loses its focus.
+---
+---in GTK uses GtkHScale/GtkVScale (GTK 2) or GtkScale (GTK 3), in Windows uses TRACKBAR_CLASS, and in Motif uses xmScale.
+---@class val: ihGUI, standartAttributes, visualAttributes
+---@field bgcolor string -- transparent in all systems except in Motif. It will use the background color of the native parent.
+---@field canfocus yes_no -- (creation only) (non inheritable): enables the focus traversal of the control. In Windows the control will still get the focus when clicked. Default: YES. (since 3.0)
+---@field propagatefocus yes_no -- (non inheritable): enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: NO. (since 3.23)
+---@field inverted string -- Invert the minimum and maximum positions on screen. When INVERTED=YES maximum is at top and left (minimum is bottom and right), when INVERTED=NO maximum is at bottom and right (minimum is top and left). The initial value depends on ORIENTATION passed as parameter on creation, if ORIENTATION=VERTICAL default is YES, if ORIENTATION=HORIZONTAL default is NO. (since 3.0)
+---@field max string -- Contains the maximum valuator value. Default is "1". When changed the display will not be updated until VALUE is set.
+---@field min string -- Contains the minimum valuator value. Default is "0". When changed the display will not be updated until VALUE is set.
+---@field pagestep string -- Controls the increment for PgDn and PgUp keys. It is not the size of the increment. The increment size is "pagestep*(max-min)", so it must be 0<pagestep<1. Default is "0.1".
+---@field rastersize string -- (non inheritable): The initial size is 100 pixels along the major axis, and the handler normal size on the minor axis. If there are ticks then they are added to the natural size on the minor axis. The handler can be smaller than the normal size. Set to NULL to allow the automatic layout use smaller values.
+---@field showticks string -- [Windows and Motif Only]: The number of tick marks along the valuator trail. Minimum value is "2". Default is "0", in this case the ticks are not shown. It can not be changed to 0 from a non zero value, or vice-versa, after the control is mapped. GTK does not support ticks.
+---@field step string -- Controls the increment for keyboard control and the mouse wheel. It is not the size of the increment. The increment size is "step*(max-min)", so it must be 0<step<1. Default is "0.01".
+---@field tickspos string -- [Windows Only] (creation only): Allows to position the ticks in both sides (BOTH) or in the reverse side (REVERSE). Default: NORMAL. The normal position for horizontal orientation is at the top of the control, and for vertical orientation is at the left of the control. In Motif, the ticks position is always normal. (since 3.0)
+---@field orientation string -- (creation only) (non inheritable):  Informs whether the valuator is "VERTICAL" or "HORIZONTAL". Vertical valuators are bottom to up, and horizontal valuators are left to right variations of min to max (but can be inverted using INVERTED). Default: "HORIZONTAL".
+---@field value string -- (non inheritable): Contains a number between MIN and MAX, indicating the valuator position. Default: "0.0".
 local val = {}
 val.valuechanged_cb = valuechanged_cb
 val.map_cb = map_cb
@@ -1227,8 +1945,71 @@ flatval.leavewindow_cb = leavewindow_cb
 flatval.k_any = k_any
 flatval.help_cb = help_cb
 
----@class cells: ihGUI
+---Creates a grid widget (set of cells) that enables several application-specific drawing, such as: chess tables, tiles editors, degrade scales, drawable spreadsheets and so forth.
+---
+---This element is mostly based on application callbacks functions that determine the number of cells (rows and columns), their appearance and interaction. This mechanism offers full flexibility to applications, but requires programmers attention to avoid infinite loops inside this functions. Using callbacks, cells can be also grouped to form major or hierarchical elements, such as headers,  footers etc. This callback approach was intentionally chosen to allow all cells to be dynamically and directly changed based on application's data structures. Since the size of each cell is given by the application the size of the control also must be given using SIZE or RASTERSIZE attributes.
+---
+---This is an additional control that depends on the CD library. It is included in the IupControls library.
+---
+---It inherits from IupCanvas.
+---
+---Originally implemented by Andrй Clinio.
+------
+---[Utility functions:]
+---These functions can be used to help set and get attributes from the control:
+---
+---void  IupSetAttributeId2(Ihandle* ih, const char* name, int lin, int col, const char* value);
+---char* IupGetAttributeId2(Ihandle* ih, const char* name, int lin, int col);
+---int   IupGetIntId2(Ihandle* ih, const char* name, int lin, int col);
+---float IupGetFloatId2(Ihandle* ih, const char* name, int lin, int col);
+---void  IupSetfAttributeId2(Ihandle* ih, const char* name, int lin, int col, const char* format, ...);
+---void  IupSetIntId2(Ihandle* ih, const char* name, int lin, int col, int value);
+---void  IupSetFloatId2(Ihandle* ih, const char* name, int lin, int col, float value);
+---
+--- IupSetAttribute(ih, "30:10", value)        => IupSetAttributeId2(ih, "", 30, 10, value)
+--- IupSetAttribute(ih, "BGCOLOR30:10", value) => IupSetAttributeId2(ih, "BGCOLOR", 30, 10, value)
+--- IupSetAttribute(ih, "ALIGNMENT10", value)  => IupSetAttributeId(ih, "ALIGNMENT", 10, value)
+--- When one of the indices is the asterisk, use IUP_INVALID_ID as the parameter. For ex:
+---
+--- IupSetAttribute(ih, "BGCOLOR30:*", value) => IupSetAttributeId2(ih, "BGCOLOR", 30, IUP_INVALID_ID, value)
+--- These functions are faster than the traditional functions because they do not need to parse the attribute name string and the application does not need to concatenate the attribute name with the id.
+---@class cells: ihGUI, standartAttributes, visualAttributes, fontAttributes, canvas
+---@field boxed yes_no --  Determines if the bounding cells' regions should be drawn with black lines. It can be "YES" or "NO". Default: "YES". If the span attributes are used, set this attribute to "NO" to avoid grid drawing over spanned cells.
+---@field bufferize yes_no -- Disables the automatic redrawing of the control, so many attributes can be changed without many redraws. When set to "NO" the control is redrawn. When REPAINT attribute is set, BUFFERIZE is automatically set to "NO". Default: "NO".
+---@field canvas string -- (read-only) (non inheritable): Returns the internal IUP CD canvas. This attribute should be used only in specific cases and by experienced CD programmers.
+---@field clipped yes_no -- Determines if, before cells drawing, each bounding region should be clipped. This attribute should be changed in few specific cases.  It can be "YES" or "NO". Default: "YES".
+---@field first_col string -- (read-only) (non inheritable): Returns the number of the first visible column.
+---@field first_line string -- (read-only) (non inheritable): Returns the number of the first visible line.
+---@field full_visible string -- (write-only) (non inheritable): Tries to show completely a specific cell (considering any vertical or horizontal header or scrollbar position) .This attribute is set by a formatted string "%d:%d" (C syntax), where each "%d" represent the line and column integer indexes respectively.
+---@field image_canvas string -- (read-only) (non inheritable): Returns the internal image CD canvas. This attribute should be used only in specific cases and by experienced CD programmers.
+---@field limits string -- (read-only) (non inheritable): Returns the limits of a given cell. Input format is "lin:col" or "%d:%d" in C. Output format is "xmin:xmax:ymin:ymax" or "%d:%d:%d:%d" in C.
+---@field limitsl string -- (read-only) (non inheritable): Returns the limits of a given cell. Input format is "lin:col" or "%d:%d" in C. Output format is "xmin:xmax:ymin:ymax" or "%d:%d:%d:%d" in C.
+---@field limitsc string -- (read-only) (non inheritable): Returns the limits of a given cell. Input format is "lin:col" or "%d:%d" in C. Output format is "xmin:xmax:ymin:ymax" or "%d:%d:%d:%d" in C.
+---@field non_scrollable_lines string -- Determines the number of non-scrollable lines (vertical headers) that should always be visible despite the vertical scrollbar position. It can  be any non-negative integer value. Default: "0"
+---@field origin string -- Sets the first visible line and column positions. This attribute is set by a formatted string "%d:%d" (C syntax), where each "%d" represent the line and column integer indexes respectively.
+---@field repaint string -- (write-only) (non inheritable): When set with any value, provokes the control to be redrawn.
+---@field size string -- (non inheritable): there is no initial size. You must define SIZE or RASTERSIZE.
+---@field scrollbar yes_no -- (creation only): Default: "YES".
 local cells = {}
+cells.draw_cb = draw_cb
+cells.height_cb = height_cb
+cells.hspan_cb = hspan_cb
+cells.mouseclick_cb = mouseclick_cb
+cells.mousemotion_cb = mousemotion_cb
+cells.ncols_cb = ncols_cb
+cells.nlines_cb = nlines_cb
+cells.scrolling_cb = scrolling_cb
+cells.vspan_cb = vspan_cb
+cells.width_cb = width_cb
+cells.map_cb = map_cb
+cells.unmap_cb = unmap_cb
+cells.destroy_cb = destroy_cb
+cells.getfocus_cb = getfocus_cb
+cells.killfocus_cb = killfocus_cb
+cells.enterwindow_cb = enterwindow_cb
+cells.leavewindow_cb = leavewindow_cb
+cells.k_any = k_any
+cells.help_cb = help_cb
 -- TODO:
 
 ---@class matrix: ihGUI
@@ -1263,12 +2044,181 @@ local plot = {}
 local olecontrol = {}
 -- TODO:
 
----@class scintilla: ihGUI
+---Creates a multiline source code text editor that uses the Scintilla library.
+---
+---Scintilla is a free library that provides text-editing functions, with an emphasis on advanced features for source code editing. It comes with complete source code and a license that permits use in any free project or commercial product, and it is available on http://www.scintilla.org/.
+---
+---IupScintilla library includes the Scintilla code, so no external references are needed.
+---
+---For compilers that don't have C++ 11 support (g++ < 4.8 and Visual C++ < 14) we use Scintilla version 3.6.6, for compilers that have we use Scintilla version 3.11.2. We are still not using Scintilla 4.x because it uses C++14 features, and requires Microsoft Visual C++ 2017 and g++ 7.
+---
+---The global attribute SCINTILLA_VERSION contains the Scintilla version in use. (since 3.29)
+---
+---Supported in Windows and in the systems the GTK driver is supported.
+---[Initialization and Usage]
+---The IupScintillaOpen function must be called after a IupOpen, so that the control can be used. The "iup_scintilla.h" file must also be included in the source code. The program must be linked to the controls library (iup_scintilla). When statically linking there are additional libraries: "imm32.lib" and "msimg32" in Windows; and "atk-1.0" in Linux.
+---
+---To make the control available in Lua use require"iuplua_scintilla" or manually call the initialization function in C, iupscintillalua_open, after calling iuplua_open.  When manually calling the function the iuplua_scintilla.h file must also be included in the source code and the program must be linked to the Lua control library (iuplua_scintilla).
+---[Notes]
+---Enter key will add a new line, and the Tab key will insert a Tab.
+---
+---Internal Drag&Drop support is enabled by default, although the Drag & Drop attributes and callbacks are supported they may not work as expected.
+---
+---IupScintilla uses attributes and callbacks very similar to the IupText control, except for text formatting. But notice that in IupScintilla position always starts at 0.
+---
+---Although the IupScintilla documentation should be sufficient for most uses, some advanced features will be better understood if the Scintilla Documentation is consulted. Also some Scintilla features are not available in IupScintilla, so by consulting that documentation you will be able to check which one and if necessary you can request the implementation in IupScintilla.
+---@class scintilla: ihGUI, standartAttributes, visualAttributes, dragNDrop
+---@field border yes_no -- (creation only): Shows a border around the text. Default: "YES".
+---@field canfocus yes_no -- (creation only) (non inheritable): enables the focus traversal of the control. In Windows the control will still get the focus when clicked. Default: YES.
+---@field propagatefocus yes_no -- (non inheritable): enables the focus callback forwarding to the next native parent with FOCUS_CB defined. Default: NO. (since 3.23)
+---@field clipboard string -- (non inheritable): clear, cut, copy or paste the selection to or from the clipboard. Values: "CLEAR", "CUT", "COPY", "PASTE". Returns Yes or No, if data can be pasted from the clipboard.
+---@field cursor string -- (non inheritable): defines the cursor type. Can be: "NORMAL" or "WAIT" (displays a wait cursor when the mouse is over or owned by the control).
+---@field dropfilestarget yes_no -- [Windows and GTK Only] (non inheritable): Enable or disable the drop of files. Default: NO, but if DROPFILES_CB is defined when the element is mapped then it will be automatically enabled.
+---@field keysunicode yes_no -- [Windows Only] (non inheritable): allow processing of Unicode typed characters. Default: NO. (since 3.9)
+---@field overwrite yes_no -- (non inheritable): turns the overwrite mode ON or OFF. When enabled, each typed character replaces the character to the right of the text caret. When disabled, characters are inserted at the caret.
+---@field mousedwelltime string|nil -- (non inheritable): time the mouse must sit still, in milliseconds, to generate a DWELL_CB callback. If set to NULL, the default, no dwell events are generated. (since 3.23)
+---@field readonly yes_no -- (non inheritable): Allows the user only to read the contents, without changing it. Restricts the insertion using keyboard input and attributes. Navigation keys are still available. Possible values: "YES" and "NO". Default: NO.
+---@field savepoint string -- (non inheritable, write-only): sets the current state of the document to saved (given value is ignored). The SAVEPOINT_CB callback is called with status=0 if the document is modified, and called with status=1 if the save point is reached with Undo/Redo. After setting the SAVEPOINT, when editing is done the SAVEPOINT_CB callback is called with status=0. When undo is performed back to the point were the saved state was set the callback is called again with status=1. (since 3.23)
+---@field modified yes_no -- (non inheritable, read-only): returns if the text has been modified since the last SAVEPOINT. Can return Yes or No. (since 3.23)
+---@field size string -- (non inheritable): Since the contents can be changed by the user, the Natural Size is not affected by the text contents. Use VISIBLECOLUMNS and VISIBLELINES to control the Natural Size.
+---@field usepopup yes_no -- (non inheritable): allows to disable the default editing menu shown when the user clicks with the right button. Default: Yes.
+---@field visiblecolumns string -- Defines the number of visible columns for the Natural Size, this means that will act also as minimum number of visible columns. It uses a wider character size then the one used for the SIZE attribute so strings will fit better without the need of extra columns. As for SIZE you can set to NULL after map to use it as an initial value. Default: 50.
+---@field visiblelines string -- Defines the number of visible lines for the Natural Size, this means that will act also as minimum number of visible lines. As for SIZE you can set to NULL after map to use it as an initial value. Default: 10.
+---@field visiblelinescount string -- (non inheritable, read-only): returns the number of actual visible lines.
+---@field wordwrap string -- (non inheritable): If enabled will force a word wrap of lines that are greater than the with of the control, and the horizontal scrollbar will be removed. Can be "WORD", "CHAR" or "NONE". Default: NONE.
+---@field wordwrapvisualflags string -- (non inheritable): enable the drawing of visual flags to indicate a line is wrapped. Can be: MARGIN (at the line number margin), START (start of wrapped line), END (end of wrapped line) or NONE. Default: NONE.
+---
+---@field add string -- [text Retrieval and Modification] (non inheritable, write-only): Inserts a text at the current position. If VALUELEN is defined, the it is used instead of strlen. (since 3.27)
+---@field append string -- [Text Retrieval and Modification] (non inheritable, write-only): Inserts a text at the end of the text. If APPENDNEWLINE=YES, an end of line character will be automatically inserted before the appended text (APPENDNEWLINE default is YES). If VALUELEN is defined, the it is used instead of strlen (since 3.27).
+---@field charID string -- [Text Retrieval and Modification] (non inheritable, read-only): returns the character at a given position, considering the "id" as the position.
+---@field clearall string -- [Text Retrieval and Modification] (non inheritable, write-only): deletes all the text (unless the document is read-only).
+---@field count string -- [text Retrieval and Modification] (non inheritable, read-only): returns the number of characters in the text.
+---@field deleterange string -- [Text Retrieval and Modification] (non inheritable, write-only): Deletes a range of text in the document. It uses a string format "pos,len" in order to indicate the start position and text length to delete.
+---@field insertID string -- [Text Retrieval and Modification] (non inheritable, write-only): Inserts a text string at position "id" or at the current position if pos is -1 or omitted. If the current position is after the insertion point then it is moved along with its surrounding text but no scrolling is performed. Notice that the selected text is not used to position the inserted text.
+---@field lineID string -- [Text Retrieval and Modification] (non inheritable, read-only): returns the text of the line, considering the "id" as the line number. It includes the end of line character if the line has one. Number lines starts at 0.
+---@field linecount string -- [Text Retrieval and Modification] (non inheritable, read-only): returns the number of lines in the text.
+---@field linevalue string -- [Text Retrieval and Modification] (non inheritable, read-only): returns the text of the line where the caret is. It does not include the end of line character.
+---@field prepend string -- [Text Retrieval and Modification] (non inheritable, write-only): Inserts a text at the begin of the text. If APPENDNEWLINE=YES, an end of line character will be automatically inserted after the prepended text if the text is not empty (APPENDNEWLINE default is YES).
+---@field value string -- [text Retrieval and Modification] (non inheritable): Text entered by the user. The end of line character indicates a new line. After the element is mapped and if there is no text will return the empty string "". This replaces all the text in the document with the zero terminated text string you pass in.
+---
+---@field annotationtextID string -- [Annotation] (non inheritable): defines and returns an annotation displayed underneath a specific line, considering the "id" as the line number. An annotation may consist of multiple lines separated by '\n'.
+---@field annotationstyleID string -- [Annotation] (non inheritable): sets and gets a particular style to the annotation, considering the "id" as the line number.
+---@field annotationstyleoffset string -- [Annotation] (non inheritable): sets and gets a style offset, in order to separate standard text styles from annotation styles.
+---@field annotationvisible string -- [Annotation] (non inheritable): enable or disable annotations. Can be "HIDDEN" (not displayed), "STANDARD" (displayed) or "BOXED" (displayed and surrounded by a box). Default HIDDEN.
+---@field annotationclearall string -- [Annotation] (non inheritable, write-only): deletes all annotations.
+---
+---@field autocshowID string -- [Auto-Completion (since 3.10)] (non inheritable, write only): causes a list of words to be displayed. The words are separated by a space. "id" defines the number of characters of the word already entered by user.
+---@field autoccancel string -- [Auto-Completion (since 3.10)] (non inheritable, write only): cancels any displayed auto-completion list. When in auto-completion mode, the list should disappear when the user types a character that can not be part of the auto-completion.
+---@field autocactive string -- [Auto-Completion (since 3.10)] (non inheritable, read only): returns YES if there is an active auto-completion list and NO if there is not.
+---@field autocposstart string -- [Auto-Completion (since 3.10)] (non inheritable, read only): returns the current position when the list of words started to be shown.
+---@field autoccomplete string -- [Auto-Completion (since 3.10)] (non inheritable, write only): triggers auto-completion. This has the same effect as the tab key.
+---@field autocselect string -- [Auto-Completion (since 3.10)] (non inheritable, write only): selects an item in the auto-completion list. It searches in the list of words for the first that matches of value (comparisons are case sensitive). If the item is not found, no item is selected.
+---@field autocselectedindex string -- [Auto-Completion (since 3.10)] (non inheritable, read only): retrieves the current selection index, set by AUTOCSELECT attribute.
+---@field autocdroprestofword yes_no -- [Auto-Completion (since 3.10)] (non inheritable): when an item is selected, any word characters following the caret are first erased if this attribute is set YES. The default is NO.
+---@field autocmaxheight string -- [Auto-Completion (since 3.10)] (non inheritable): sets and gets the maximum number of rows that will be visible in an auto-completion list. If there are more rows in the list, then a vertical scrollbar is shown. The default is 5.
+---@field autocmaxwidth string -- [Auto-Completion (since 3.10)] (non inheritable): the maximum width of an auto-completion list expressed as the number of characters in the longest item that will be totally visible. The default is 0 (in this case, the list width is calculated to fit the item with the most characters).
+---
+---@field bracehighlight string -- [Brace Highlighting] (non inheritable, write only): highlights the brace, defined by its initial and final positions (format: "pos1:pos2"). Up to two characters can be highlighted in a 'brace highlighting style', which is defined as style number (See Style Definition, id = 34).
+---@field bracebadlight string -- [Brace Highlighting] (non inheritable, write only): highlights the non matching brace, based on a position. If there is no matching brace then the brace badlighting style (See Style Definition, id = 35) can be used to show the brace that is unmatched. Set -1 as position removes the highlight.
+---@field bracematchID string -- [Brace Highlighting] (non inheritable, read only): finds a corresponding matching brace given id, the position of one brace. The brace characters handled are '(', ')', '[', ']', '{', '}', '<', and '>'. If the character at position is not a brace character, or a matching brace cannot be found, the return value is -1.
+---
+---@field caret string -- [Caret and Selection] (non inheritable): Position of the insertion point. The first position, lin or col, is "0". It uses a string format "lin,col" in order to indicate the caret position, where lin and col must be integer numbers.When lin is greater than the number of lines, the caret is placed at the last line. When col is greater than the number of characters in the given line, the caret is placed after the last character of the line. If the caret is not visible the text is scrolled to make it visible.
+---@field caretpos string -- [Caret and Selection] (non inheritable): Position of the insertion point using a zero based character unique index "pos". Useful for indexing the VALUE string. This removes any selection, sets the caret at pos and scrolls the view to make the caret visible, if necessary.
+---@field carettoview string -- [Caret and Selection] (non inheritable, write only): Moves the caret to the nearest visible line. Any selection is lost.
+---@field caretcolor string -- [Caret and Selection] (non inheritable): color of the caret. Values in RGB format ("r g b"). (since 3.17)
+---@field caretstyle string -- [Caret and Selection] (non inheritable): style of the caret. Can be LINE, BLOCK or INVISIBLE. Default: LINE. (since 3.17)
+---@field caretwidth  string -- [Caret and Selection] (non inheritable): with of the caret line. Can be 0, 1, 2 or 3 pixels. Default: 1. Works only when CARETSTYLE=LINE. A size of 0 will make the caret invisible also. (since 3.17)
+---@field caretlinevisible string -- [Caret and Selection] (non inheritable): Enable or disable caret line background color. Can be Yes or No. Default: No. (since 3.21)
+---@field caretlinebackcolor string -- [Caret and Selection] (non inheritable): Color of caret line background. Values in RGB format ("r g b"). (since 3.21)
+---@field caretlinebackalpha string -- [Caret and Selection] (non inheritable): Set translucency used for line containing the caret. Translucency ranges from 0 for completely transparent to 255 for opaque with 256 being opaque and not using translucent drawing code which may be slower. (since 3.21)
+---@field caretxpolicy string -- [Caret and Selection] (non inheritable): These set the caret policy. The value can be a combination of "SLOP", "STRICT", "JUMPS" and "EVEN" using "|" as separator. When SLOP is used the attribute CARETSLOP defines an unwanted zone for the caret. This zone is defined as a number of pixels near the vertical margins, and as a number of lines near the horizontal margins. (since 3.26)
+---@field caretypolicy string -- [Caret and Selection] (non inheritable): These set the caret policy. The value can be a combination of "SLOP", "STRICT", "JUMPS" and "EVEN" using "|" as separator. When SLOP is used the attribute CARETSLOP defines an unwanted zone for the caret. This zone is defined as a number of pixels near the vertical margins, and as a number of lines near the horizontal margins. (since 3.26)
+---@field firstvisibleline string -- [Caret and Selection] (non inheritable): the line number of the first visible line. (since 3.18)
+---@field selectedtext string -- [Caret and Selection] (non inheritable): Selection text. Returns NULL if there is no selection. When changed replaces the current selection. Similar to INSERT, but does nothing if there is no selection.
+---@field selection string -- [Caret and Selection] (non inheritable): Selection interval. Returns NULL if there is no selection. The first position, lin or col, is "0". The accepted format is represented by the string "lin1,col1:lin2,col2", where lin1, col1, lin2 and col2 are integer numbers corresponding to the selection's interval. col2 correspond to the character after the last selected character. The values ALL and NONE are also accepted.
+---@field selectionfgcolor string -- [Caret and Selection] (non inheritable): foreground color of the selection. Values in RGB format ("r g b"). Default is system dependent. (since 3.23)
+---@field selectionbgcolor string -- [Caret and Selection] (non inheritable): background color of the selection. Values in RGB format ("r g b"). Default is system dependent. (since 3.23)
+---@field selectionalpha string -- [Caret and Selection] (non inheritable): The selection can be drawn translucently in the selection background color by setting an alpha value. Translucency ranges from 0 for completely transparent to 255 for opaque with 256 being opaque and not using translucent drawing. (since 3.23)
+---@field selectionpos string -- [Caret and Selection] (non inheritable): Same as SELECTION but using a zero based character index "pos1:pos2". Useful for indexing the VALUE string. The values ALL and NONE are also accepted.
+---@field wordposID string -- [Caret and Selection] (non inheritable, read-only): returns the start and end of a word in the text around the given position (in id). It uses the format "start:end". Returns NULL if no words were found. (since 3.23)
+---@field wordrange string -- [Caret and Selection] (non inheritable): interval for ISWORD. (since 3.23)
+---@field isword  string -- [Caret and Selection] (non inheritable, read-only): check if the interval defined by WORDRANGE is a word. (since 3.23)
+---
+---@field 
+---@field bgcolor string -- Background color of the text. Default: the global attribute TXTBGCOLOR. If changed it will affect the background color of all styles (since 3.23).
+---@field fgcolor string -- Text color. Default: the global attribute TXTFGCOLOR. If changed it will affect the foreground color of all styles (since 3.23).
+---@field 
 local scintilla = {}
 -- TODO:
 
----@class webbrowser: ihGUI
+---Creates a web browser control. It is responsible for managing the drawing of the web browser content and forwarding of its events.
+---
+---In Linux, the implementation uses the WebKit/GTK+, the new GTK+ port of the WebKit, an open-source web content engine. More information about WebKit/GTK+ (building, dependencies, releases, etc) can be seen in Notes section. When using GTK 2.x it uses the WebKit1 API. When using GTK 3.x, in Linux 3.x uses the WebKit1 API, in Linux 4.x and newer uses the WebKit2 API.
+---
+---In Windows, the implementation uses the IupOleControl to embed an instance of the Internet Explorer WebBrowser control. A listener interface is used to capture and handle events using the Active Template Library (ATL) classes. More information about ATL can be seen in Notes section. So it is only available for Visual C++ compilers when statically linking.
+------
+---[Itilialization and usage]
+---The IupWebBrowserOpen function must be called after IupOpen. The iupweb.h file must also be included in the source code. The program must be linked to the controls library (iupweb). If static linking is used then in Windows must be linked with the "iupole" library and in Linux must be linked with the "webkit-1.0" for WebKit1 with GTK2, webkitgtk-3.0 for WebKit1 with GTK3, and webkit2gtk-4.0 + gio-2.0 libraries for WebKit2 with GTK3.
+---
+---To make the control available in Lua use require"iupluaweb" or manually call the initialization function in C, iupweblua_open, after calling iuplua_open. When manually calling the function the iupluaweb.h file must also be included in the source code, and the program must be linked to the lua control library (iupluaweb).
+------
+---[Creation]
+---`browser = iup.webbrowser()`
+---@class webbrowser: ihGUI, standartAttributes, visualAttributes, fontAttributes
+---@field backcount string -- [GTK Only] (read only): gets the number of items that precede the current page.
+---@field backforward string -- (write only): sets the number of steps away from the current page and loads the history item. Negative values represent steps backward while positive values represent steps forward.
+---@field goback string -- (write only): go to the previous page. Same as BACKFORWARD=-1. (since 3.23)
+---@field goforward string -- (write only): go to the next page. Same as BACKFORWARD=1. (since 3.23)
+---@field cangoback string -- (read-only): informs if there is a previous page. (since 3.23)
+---@field cangoforward string -- (read-only): informs if there is a next page. (since 3.23)
+---@field copy string -- (write only): copy the selection to the clipboard. (since 3.10)
+---@field forwardcount string -- [GTK Only] (read only): gets the number of items that succeed the current page.
+---@field html string -- loads a given HTML content. (not write only since 3.30)
+---@field itemhistoryID string -- [GTK Only] (read only): Returns the URL associated with a specific history item. Negative "id" value represents a backward item while positive "id" value represents a forward item ("0" represents the current item).
+---@field innertext string -- [Windows Only]: the innerText property of the HTML element marked with the ID given by the attribute ELEMENT_ID. (since 3.24)
+---@field attribute string -- [Windows Only]: the content attribute of the HTML element marked with the ID given by the attribute ELEMENT_ID. The name of the content attribute is given by the attribute ATTRIBUTE_NAME. (since 3.24)
+---@field print string -- (write only): shows the print dialog. In Windows if set to Yes will display the system print dialog (since 3.30). (since 3.10)
+---@field printpreview string -- [Windows Only]: shows a print preview dialog. (since 3.30)
+---@field reload string -- (write only): reloads the page in the webbrowser.
+---@field selectall string -- (write only): selects all contents. (since 3.10)
+---@field status string -- (read only): returns the load status. Can be "LOADING", "COMPLETED" or "FAILED".
+---@field stop string -- (write only): stops any ongoing load in the webbrowser.
+---@field value string -- sets a specified URL to load into the webbrowser, or retrieve the current URL.
+---@field zoom string -- the zoom factor of the browser in percent. No zoom is 100%. (since 3.10)
+---@field editable yes_no -- enable the design mode, or the WYSIWYG HTML editor. Can be Yes or NO. (since 3.30)
+---@field new string -- [(Depends on the EDITABLE attribute)] (write-only): initializes blank document. Value is ignored.
+---@field openfile string -- [(Depends on the EDITABLE attribute)] (write-only): open an HTML file given its filename. In Windows if the file is modified it will ask for a confirmation.
+---@field savefile string -- [(Depends on the EDITABLE attribute)] (write-only): save the contents in a HTML file given its filename. In Linux will save in a .mhtml file with all the images packed in a single file.
+---@field dirty string -- [(Depends on the EDITABLE attribute)] [Windows Only]: Returns Yes or No if the contents has been edited by the user.
+---@field undo string -- [(Depends on the EDITABLE attribute)] (write-only): undo the last editing.
+---@field redo string -- [(Depends on the EDITABLE attribute)] (write-only): redo the last editing.
+---@field cut string -- [(Depends on the EDITABLE attribute)] (write-only): cuts the selection to the clipboard.
+---@field paste string -- [(Depends on the EDITABLE attribute)] (write-only): pastes the clipboard to the selection or caret.
+---@field find string -- [(Depends on the EDITABLE attribute)] [Windows Only] (write-only): shows a dialog for finding a text.
+---@field execcommand string -- [(Depends on the EDITABLE attribute)] (write-only): executes an editing command. Possible commands:  CUT, COPY, PASTE, UNDO, REDO, SELECTALL, BOLD, ITALIC, UNDERLINE, STRIKETHROUGH, JUSTIFYLEFT, JUSTIFYCENTER, JUSTIFYRIGHT, JUSTIFYFULL, INDENT, OUTDENT, REMOVEFORMAT, DELETE, SUBSCRIPT, SUPERSCRIPT, INSERTORDEREDLIST, INSERTUNORDEREDLIST, UNLINK
+---@field commandstate yes_no -- [(Depends on the EDITABLE attribute)] [Windows Only] (read-only): returns the command state. Can be Yes or No. The command name must be stored on the attribute COMMAND.
+---@field commandenabled yes_no -- [(Depends on the EDITABLE attribute)] [Windows Only] (read-only): returns if the command is enabled. Can be Yes or No. The command name must be stored on the attribute COMMAND.
+---@field commandtext string -- [(Depends on the EDITABLE attribute)] [Windows Only] (read-only): returns the command text if any. The command name must be stored on the attribute COMMAND.
+---@field commandvalue string -- [(Depends on the EDITABLE attribute)] [Windows Only] (read-only): returns the command value if any. The command name must be stored on the attribute COMMAND.
+---@field insertimage string -- [(Depends on the EDITABLE attribute)] (write-only): inserts an image given its url. In Windows if value is NULL displays a system dialog for inserting an image.
+---@field insertimagefile string -- [(Depends on the EDITABLE attribute)] (write-only): inserts an image given its filename.
+---@field createlink string -- [(Depends on the EDITABLE attribute)] (write-only): inserts a link given its url. In Windows if value is NULL displays a system dialog for editing a link.
+---@field inserttext string -- [(Depends on the EDITABLE attribute)] (write-only): inserts a text at the current selection or caret.
+---@field inserthtml string -- [(Depends on the EDITABLE attribute)] (write-only): inserts a formatted text at the current selection or caret.
+---@field fontname string -- [(Depends on the EDITABLE attribute)] font face name. In Linux is write-only.
+---@field fontsize string -- [(Depends on the EDITABLE attribute)] font relative size. In Linux is write-only. Can be a number form "1" to "7", meaning 1: x-small, 2: small, 3: medium, 4: large, 5: x-large, 6: xx-large, 7: xxx-large.
+---@field formatblock string -- [(Depends on the EDITABLE attribute)] The block format. In Linux is write-only. It can be: "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6", "Paragraph", "Preformatted" and "Block Quote". In Windows returns "Normal" for "Paragraph",  "Formatted" for "Preformatted" and "Block Quote" is not supported.
+---@field forecolor string -- [(Depends on the EDITABLE attribute)] the foreground color of the selected text. In Linux is write-only.
+---@field backcolor string -- [(Depends on the EDITABLE attribute)] the background color of the selected text. In Linux is write-only.
 local webbrowser = {}
+webbrowser.completed_cb = completed_cb
+webbrowser.error_cb = error_cb
+webbrowser.navigate_cb = navigate_cb
+webbrowser.newwindow_cb = newwindow_cb
+webbrowser.update_cb = update_cb
+webbrowser.map_cb = map_cb
+webbrowser.unmap_cb = unmap_cb
+webbrowser.destroy_cb = destroy_cb
 -- TODO:
 
 -- Controls Standart classes end
@@ -1714,7 +2664,6 @@ function iup.CopyAttributes(src_ih, dst_ih) end
 function iup.GetAttributeHandleHandle(name) end
 
 ---@alias global_name string|"UTF8MODE"|"UTF8MODE_FILE"|"DEFAULTPRECISION"|"DEFAULTDECIMALSYMBOL"|"SB_BGCOLOR"|"IUPLUA_THREADED"
----@alias yes_no string|"YES"|"NO"
 ---Sets an attribute in the global environment. If the driver process the attribute then it will not be stored internally.
 ---@param name global_name
 ---@param value yes_no|nil -- value of the attribute. If it equals nil, the attribute will be removed
@@ -1739,7 +2688,7 @@ function iup.StringCompare(str1, str2, casesensitive, lexicographic) end
 
 ---@class timer: ihandle
 ---@field time string|integer -- The time interval in milliseconds. In Windows the minimum value is 10ms
----@field run string|"YES"|"NO" -- Starts and stops the timer. Possible values: "YES" or "NO". Returns the current timer state. If you have multiple threads start the timer in the main thread
+---@field run string|yes_no -- Starts and stops the timer. Possible values: "YES" or "NO". Returns the current timer state. If you have multiple threads start the timer in the main thread
 ---@field wid string|"-1" -- (read-only): Returns the native serial number of the timer. Returns `-1` if not running. A timer is mapped only when it is running
 -- TODO: timer doesn't have expand field
 local timer = {}
@@ -2932,3 +3881,4 @@ VISIBLELINES: When DROPDOWN=NO defines the number of visible lines for the Natur
 
 
 return iup
+-- TODO: alias for "YES"|"NO"
