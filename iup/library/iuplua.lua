@@ -689,7 +689,95 @@ local function wheel_cb(self, delta, x, y, status) end
 ---@return integer|`iup.DEFAULT`
 local function wom_cb(self, state) end
 
+---Action generated when the user has selected an item in an auto-completion list. It is sent before the selection is inserted. Automatic insertion can be cancelled by setting the AUTOCCANCEL attribute before returning from the callback. (since 3.10.1)
+---@param self ihandle
+---@param pos integer
+---@param text string
+---@return integer|`iup.DEFAULT`
+local autocselection_cb = function(self, pos, text) end
 
+---Called after the user has cancelled an auto-completion list. (since 3.10.1)
+---@param self ihandle
+---@return integer|`iup.DEFAULT`
+local autoccancelled_cb = function(self) end
+
+---Called after the user deleted a character while auto-completion list was active. (since 3.10.1)
+---@param self ihandle
+---@return integer|`iup.DEFAULT`
+local autocchardeleted_cb = function(self) end
+
+---Action generated before some text is inserted. Inside the callback the attribute CHANGEINSERT can be set to change the inserted text. (since 3.27)
+---@param self ihandle
+---@param pos integer -- 0 based character position when change started
+---@param length integer -- size of the change
+---@param text string -- the inserted text value. It is NULL when insert=0
+---@return `iup.DEFAULT`|integer
+local insertcheck_cb = function(self, pos, length, text) end
+
+---Action generated when the user keeps the mouse in one position for the dwell period defined in MOUSEDWELLTIME. (since 3.23)
+---@param self ihandle
+---@param state 0|1 -- 1 if mouse sit still more than the dwell period, 0 if mouse moved or key pressed after state=1 was called
+---@param pos integer|-1 -- the nearest position in the document to the position where the mouse pointer was lingering. Can be -1 if not near any character.
+---@param x integer
+---@param y integer
+---@return `iup.DEFAULT`|integer
+local dwell_cb = function(self, state, pos, x, y) end
+
+---Action generated when the user clicks or double clicks on text that is in a style with the hotspot attribute set.
+---@param self ihandle
+---@param pos integer -- the character position in the document that corresponds to the hotspot click
+---@param lin integer -- line in the document that corresponds to the hotspot click
+---@param col integer -- column in the document that corresponds to the hotspot click
+---@param status integer -- status of mouse buttons and certain keyboard keys at the moment the event was generated. The same macros used for BUTTON_CB can be used for this status
+---@return `iup.DEFAULT`|integer
+local hotspotclick_cb = function(self, pos, lin, col, status) end
+
+---Called after the number of lines was interactively changed by the user. (since 3.23)
+---@param self ihandle
+---@param lin integer -- line where the change started
+---@param num integer -- number of lines than changed. A negative value indicates that lines were removed
+---@return `iup.DEFAULT`|integer
+local lineschanged_cb = function(self, lin, num) end
+
+---Action generated when the mouse button is clicked inside a margin that is marked as sensitive.
+---@param self ihandle
+---@param margin integer -- the margin number that was clicked
+---@param lin integer -- line in the document that corresponds to the margin click
+---@param status string -- status of mouse buttons and certain keyboard keys at the moment the event was generated. The same macros used for BUTTON_CB can be used for this status
+---@return `iup.DEFAULT`|integer
+local marginclick_cb = function(self, margin, lin, status) end
+
+---Notifies the application that a save point was reached (1) or left (0). Can be used to control whether to display a saved or modified document. To set the save point use the SAVEPOINT attribute.
+---@param self ihandle
+---@param status 1|0 -- can be 1 (reached) or 0 (left)
+---@return `iup.DEFAULT`|integer
+local savepoint_cb = function(self, status) end
+
+---Called when contents, styling or markers have been changed. (since 3.23)
+---@param self ihandle
+---@return `iup.DEFAULT`
+local updatecontent_cb = function(self) end
+
+---Called when selection has been changed . (since 3.23)
+---@param self ihandle
+---@return `iup.DEFAULT`
+local updateselection_cb = function(self) end
+
+---Called when the document was scrolled horizontally. (since 3.23)
+---@param self ihandle
+---@return `iup.DEFAULT`
+local updatehscroll_cb = function(self) end
+
+---Called when the document was scrolled vertically. (since 3.23)
+---@param self ihandle
+---@return `iup.DEFAULT`
+local updatevscroll_cb = function(self) end
+
+---Notifies the application when the user zooms the display using the keyboard or the ZOOM attribute. Can be used to recalculate positions, such as the width of the line number margin to maintain sizes in terms of characters rather than pixels.
+---@param self ihandle
+---@param zoomInPoints integer -- the current zoom factor
+---@return `iup.DEFAULT`
+local zoom_cb = function(self, zoomInPoints) end
 
 -- Callbacks end
 
@@ -2144,12 +2232,182 @@ local olecontrol = {}
 ---@field wordrange string -- [Caret and Selection] (non inheritable): interval for ISWORD. (since 3.23)
 ---@field isword  string -- [Caret and Selection] (non inheritable, read-only): check if the interval defined by WORDRANGE is a word. (since 3.23)
 ---
----@field 
+---@field foldflags string -- [Folding] (non inheritable, write-only): determines how folding lines are drawn. Can be: "LINEBEFORE_EXPANDED", "LINEBEFORE_CONTRACTED", "LINEAFTER_EXPANDED" or "LINEAFTER_CONTRACTED " (default).
+---@field foldlineID string -- [Folding] (non inheritable, write-only): operates over a single line. Can be CONTRACT, EXPAND, or TOGGLE. (since 3.23)
+---@field foldchildrenID string -- [Folding] (non inheritable, write-only): operates over a single line and all its children. Can be CONTRACT, EXPAND, or TOGGLE. (since 3.23)
+---@field foldall string -- [Folding] (non inheritable, write-only): operates over all levels. Can be CONTRACT, EXPAND, or TOGGLE. (since 3.23)
+---@field foldexpandedID string -- [Folding] (non inheritable): the expanded state of a single line. It has no effect on the visible state of the line or any lines that depend on it. It does change the markers in the folding margin. If you just want to toggle the fold state of one line and handle all the lines that are dependent on it, it is much easier to use TOGGLEFOLD. It can be used to process many folds without updating the display until you had finished, but you have to manually hide or show lines, and force a COLORISE. (since 3.23)
+---@field foldlevelID string -- [Folding] (non inheritable): the fold level number of a line (given in id). If you use a Lexer, it is not recommend to set the fold level (this is far better handled by the Lexer). By contrast, the fold level is useful to decide how to handle user folding requests. Fold level starts at 0.
+---@field foldlevelwhiteID string -- [Folding] (non inheritable): the fold level white flag state of a line (indicates that the line is blank). Can be: "Yes" or "No". (since 3.23)
+---@field foldlevelheaderID string -- [Folding] (non inheritable): the fold level header flag state of a line (indicates that the line is a header/fold point). Can be: "Yes" or "No". (since 3.23)
+---@field foldparentID string -- [Folding] (non inheritable, read-only): returns the line number of the first line before the given line (in id) that is marked as a fold point with FOLDLEVELHEADER=Yes and has a fold level less than the given line. If no line is found, or if the header flags and fold levels are inconsistent, the return value is -1. (since 3.23)
+---@field foldtoggle string -- [Folding] (non inheritable, write-only): Determines if the fold point (line number) may be either expanded, displaying all its child lines, or contracted, hiding all the child lines.
+---@field ensurevisibleID string -- [Folding] (non inheritable, write-only): ensure that the given line (in id) is visible by expanding folded parents. Value is can be NULL or "ENFORCEPOLICY" to apply vertical caret policy. (since 3.23)
+---@field showlines string -- [Folding] (non inheritable, write-only): make the given lines interval visible. Value is in the format "start:end", start default is 0, end default is -1 (last line). (since 3.23)
+---@field hidelines string -- [Folding] non inheritable, write-only): make the given lines interval hidden. Value is in the format "start:end", start default is 0, end default is -1 (last line). (since 3.23) 
+---
+---@field indicatorcurrent string -- [Indicators] (non inheritable): sets the indicator number that will affect INDICATORCLEARRANGE and INDICATORFILLRANGE. (since 3.23)
+---@field indicatorvalue string -- [Indicators] (non inheritable): sets the indicator value that will affect INDICATORFILLRANGE. (since 3.23)
+---@field indicatorclearrange string -- [Indicators] (non inheritable, write-only): clears the current indicator in the range given in the format "start:length" ("%d:%d" in C). (since 3.23)
+---@field indicatorfillrange string -- [Indicators] (non inheritable, write-only): fills the current indicator with the current value in the range given in the format "start:length" ("%d:%d" in C). (since 3.23)
+---@field indicatorstyleID string -- [Indicators] (non inheritable): the style used to draw the given indicator (in id). Can be: PLAIN, SQUIGGLE, TT, DIAGONAL, STRIKE, HIDDEN, BOX, ROUNDBOX, STRAIGHTBOX, FULLBOX, DASH, DOTS, SQUIGGLELOW, DOTBOX, SQUIGGLEPIXMAP, COMPOSITIONTHICK, COMPOSITIONTHIN, TEXTFORE. Default for indicator 0 is SQUIGGLE, default for indicator 1 is TT, default for indicator 2 is PLAIN. (since 3.23)
+---@field indicatorfgcolorID string -- [Indicators] (non inheritable): the color used to draw the given indicator (in id). Value in RGB format ("r g b"). Default for indicator 0 is "0 127 0", default for indicator 1 is "255 0 0", default for indicator 2 is "0 0 255". (since 3.23)
+---@field indicatoroutlinealphaID string -- [Indicators] (non inheritable): sets and retrieves the alpha transparency used to draw the outline color of the given indicator (in id). The alpha value can range from 0 (completely transparent) to 255 (no transparency). (since 3.23)
+---@field indicatoralphaID string -- [Indicators] (non inheritable): sets and retrieves the alpha transparency used to draw the fill color of the given indicator (in id). The alpha value can range from 0 (completely transparent) to 255 (no transparency). (since 3.23)
+---
+---@field colorise string -- [Lexer] (non inheritable, write-only): requests the lexer to style the document in an character interval given in value (format "start:end", start default is 0, end default is -1 (last pos)). (since 3.23)
+---@field keywordID string -- [Lexer] (non inheritable, write-only): keyword list used by the current Lexer. Until 9 lists of keywords can set up using id from 0 to 8. The value is a list of keywords separated by spaces, tabs, "\n" or "\r" or any combination of these.
+---@field keywordsets string -- [Lexer] (non inheritable, read only): returns a description of all of the keyword sets separated by "\n".
+---@field lexerlanguage string -- [Lexer] (non inheritable): associate the Lexer language name. It is case sensitive. Default: not defined. Set to NULL to clear the association. Can be: any name supported by Scintilla. For instance: asm, bash, freebasic, cmake, COBOL, cpp (C++), css, d, diff, eiffel, fortran, hypertext (HTML), xml, lisp, lua (Lua), makefile, matlab, mysql, nsis, pascal, perl, python, ruby, smalltalk, sql, tcl, tex, vb (Visual Basic), and many others.
+---@field loadlexerlibrary string -- [Lexer] (non inheritable, write-only): Load a Lexer implemented in a dynamic library given the library file name. This is a .so file on GTK+/Linux or a .DLL file on Windows. (since 3.11)
+---@field property string -- [Lexer] (non inheritable): sets and gets Lexer properties using "name=value" string pairs, where name is case sensitive and value is the associated string. There is no limit to the number of keyword pairs you can set, other than available memory. To retrieve a property first set the PROPERTYNAME attribute, the PROPERTY attribute will return its value.
+---@field propertynames string -- [Lexer] (non inheritable, read only): returns a list of property names separated by "\n". If the Lexer does not support this information then an empty string is returned. 
+---
+---@field eol string -- [Line Endings] (non inheritable): Returns the current end of line character(s). Can be "\r", "\r\n" or "\n". (since 3.24)
+---@field eolmode string -- [Line Endings] (non inheritable): End of line mode. Can be CR ("\r"), CRLF ("\r\n") or LF ("\n"). Default: LF. (since 3.24)
+---@field eolvisible yes_no -- [Line Endings] (non inheritable): End of line visibility. Default: No. (since 3.22)
+---@field fixeol string -- [Line Endings] (non inheritable, write only): Fix the line ends to use only the given mde. Can be CR ("\r"), CRLF ("\r\n") or LF ("\n"). (since 3.22, options other than LF since 3.24)
+---
+---@field marginmaskfoldersID string -- [Margins] (non inheritable): defines if a margin is folding or non-folding. Can be: Yes or No.
+---@field marginsensitiveID string -- [Margins] (non inheritable): determines if a margin is sensitive or not. Margins that are not sensitive act as selection margins which make it easy to select ranges of lines. By default, all margins are insensitive. Can be: YES or NO.
+---@field margintypeID string -- [Margins] (non inheritable): set and get the type of a margin. Each margin can be set to display only symbols, line numbers, or text. You can use the predefined values "SYMBOL", "NUMBER", "TEXT", "RTEXT" (right justify text), "BACKGROUND" or "FOREGROUND" (the latter two used for symbol margins that set their background or foreground using the style default colors).
+---@field marginwidthID string -- [Margins] (non inheritable): width of a margin in pixels (Default value: 0). A margin with width=0 is invisible.
+---@field marginmaskID string -- [Margins] (non inheritable): defines which markers can be used for symbols in the given margin (id). The value is a 32 bit number with the selected markers. A single margin can display several types of markers. See Markers. (since 3.22)
+---@field marginleft string -- [Margins] (non inheritable): size of the blank margin on the left side. Default: 1.
+---@field marginright string -- [Margins] (non inheritable): size of the blank margin on the right side. Default: 1.
+---@field margintextID string -- [Margins] (non inheritable): controls the text of each line of a text margin. id is the line number.
+---@field margintextstyleID string -- [Margins] (non inheritable): controls the style of the text of each line of a text margin. id is the line number.
+---@field margintextclearall string -- [Margins] (non inheritable, write-only): clear all text and styles of a text margin.
+---@field margincursorID string -- [Margins] (non inheritable): set and get the arrow cursor normally shown over margins. Can be: "REVERSEARROW" (default) or "ARROW".
+---@field foldmargincolor string -- [Margins] (non inheritable, write-only): changes the color of the fold margin. Values in RGB format ("r g b"). If set to NULL reset to internal default values. (since 3.22)
+---@field foldmarginhicolor string -- [Margins] (non inheritable, write-only): changes the color of the fold margin highlight. Values in RGB format ("r g b"). If set to NULL reset to internal default values. (since 3.22)
+---
+---@field markersymbolID string -- [Markers] (non inheritable): associates a marker number in the range 0 to 31 (id) with one of the marker symbols or an ASCII character. TODO: marker symbols
+---@field markerdefine string -- [Markers] (non inheritable, write-only): Defines a marker using its number and its symbol in the format: "number=symbol".
+---@field markerfgcolorID string -- [Markers] (non inheritable, write only): defines the foreground color of a marker number (id). Values in RGB format ("r g b").
+---@field markerbgcolorID string -- [Markers] (non inheritable, write only): defines the background color of a marker number (id). Values in RGB format ("r g b").
+---@field markerbgcolorselID string -- [Markers] (non inheritable, write only): defines the highlight background color of a marker number (id) when its folding block is selected. Values in RGB format ("r g b").
+---@field markeralphaID string -- [Markers] (non inheritable, write only): defines the alpha value of a marker number (id). Markers may be drawn translucently when there are no margins.
+---@field markerrgbaimageID string -- [Markers] (non inheritable, write only): defines the image name to be used on a marker number. Use IupSetHandle or IupSetAttributeHandle to associate an image to a name. See also IupImage. It must be an image created with the IupImageRGBA constructor, it can not be a image loaded from stock or resources.
+---@field markerrgbaimagescale string -- [Markers] (non inheritable, write only): defines the image scale factor, in percent (1-100).
+---@field markerhighlight string -- [Markers] (non inheritable): enable or disable the the highlight folding block when it is selected. (i.e. block that contains the caret). Can be Yes or No. Default: No.
+---@field markeraddID string -- [Markers] (non inheritable, write-only): adds marker number to a line (id). Internally, sets the marker handle number (LASTMARKERADDHANDLE attribute) that identifies the added marker (or -1 for invalid line and out of memory), which may be useful to find where a marker is after moving or combining lines.
+---@field markergetID string -- [Markers] (non inheritable, read-only): returns a marker mask with the markers that are present on the line (id).
+---@field markerdeleteID string -- [Markers] (non inheritable, write-only): deletes marker number given a line number (id). If marker number is -1, all markers are deleted from the line.
+---@field markerdeleteall string -- [Markers] (non inheritable, write-only): removes the marker from all lines given its number (0-31). If marker number is -1, it deletes all markers from all lines.
+---@field markernextID  string -- [Markers] (non inheritable, write-only): searches for a given marker mask, starting at line number (id) and continuing forwards to the end of the file. Internally, sets the the line number of the first line that contains the markers in the mask (LASTMARKERFOUND attribute) or -1, if no marker is found.
+---@field markerpreviousID string -- [Markers] (non inheritable, write-only): searches for a given marker mask, starting at line number (id) and continuing backwards to the start of the file. Internally, sets the the line number of the first line that contains the markers (LASTMARKERFOUND attribute) or -1, if no marker is found.
+---@field markerlinefromhandleID string -- [Markers] (non inheritable, read-only): searches for a marker given its handle (id) created in MARKERADDid (use the LASTMARKERADDHANDLE attribute to obtain its value) and returns the line number of the first line that contains the marker or -1, if no marker is found.
+---@field markerdeletehandle string -- [Markers] (non inheritable, write-only): searches for a marker given its handle and deletes the marker if it is found.
+---@field lastmarkeraddhandle string -- [Markers] (non inheritable, read-only): returns the last marker handle created by the MARKERADDid attribute.
+---@field lastmarkerfound string -- [Markers] (non inheritable, read-only): returns the last line number that contains a marker found by the MARKERNEXTid, MARKERPREVIOUSid or MARKERLINEFROMHANDLE attributes.
+---
+---@field print string -- [Printing (since 2.23)] Prints the text. Use the following attributes to configure the printed document. Value is the job title. By default will print all text.
+---@field printdialog string -- [Printing (since 2.23)] shows the system dialog before printing. Can be YES or NO. Default: YES. If there is a selection the user can print only the selected text.
+---@field printmarginleft string -- [Printing (since 2.23)] left margin.
+---@field printmargintop string -- [Printing (since 2.23)] top margin.
+---@field printmarginright string -- [Printing (since 2.23)] right margin.
+---@field printmarginbottom string -- [Printing (since 2.23)] bottom margin.
+---@field printmarginunits string -- [Printing (since 2.23)] units used in print margin attributes. Can be: INCH, CM or PIXELS. Default: INCH.
+---@field printwordwrap string -- [Printing (since 2.23)] controls how long lines that don't fit in the page are processed. Can be: NONE (lines are truncated) or WORD (lines are break between words). Default: WORD. Notice that CHAR wrap mode is not supported when printing.
+---@field printcolor string -- [Printing (since 2.23)] controls how colors are printed. Can be: NORMAL (print using the current screen colors), INVERTLIGHT (inverts the light value of all colors and printing on a white background), BLACKONWHITE (print all text as black on a white background), COLORONWHITE (prints all text in its own color on a white background), and COLORONWHITEDEFAULTBG (everything prints in its own color on a white background except that line numbers use their own background color). Default: NORMAL.
+---@field printmagnification string -- [Printing (since 2.23)] lets you to print at a different size than the screen font. It is the number of points to add to the size of each screen font. A value of -3 or -4 gives reasonably small print.
+---
+---@field scrollbar string -- [Scrolling] (creation only): Associates an automatic horizontal and/or vertical scrollbar. Can be: "VERTICAL", "HORIZONTAL", "YES" (both) or "NO" (none). Default: "YES". For all systems, when SCROLLBAR is NO, the natural size will always include its size even if the native system hides the scrollbar.
+---@field scrollby string -- [Printing (since 2.23)] (non inheritable, write only): Scroll the text by the given offsets in the format "lin,col". Positive lin values increase the line number at the top of the screen (i.e. they move the text upwards). Positive col values increase the column at the left edge of the view (i.e. they move the text leftwards). (since 3.17)
+---@field scrolltocaret string -- [Printing (since 2.23)] (non inheritable, write only): Scroll the text to make the caret position visible.
+---@field scrollwidth string -- [Printing (since 2.23)] (non inheritable): controls the document width in pixels. Default: 2000.
+---@field scrollwidthtracking string -- [Printing (since 2.23)] (non inheritable): scroll width is adjusted to ensure that all of the lines currently displayed can be completely scrolled. This mode never adjusts the scroll width to be narrower. (since 3.30)
+---
+---@field searchintarget string -- [Search and Replace (since 3.10)] (non inheritable, write only): This searches for the first occurrence of a text string in the target defined by TARGETSTART and TARGETEND. If the search succeeds, the target is set to the found text.
+---@field searchflags string -- [Search and Replace (since 3.10)] (non inheritable): sets and gets the search flags used in SEARCHINTARGET attribute. Possible values: MATCHCASE, WHOLEWORD, WORDSTART, REGEXP and POSIX. The flag options are combined using "|" as separators. Use NULL to reset all flags.
+---@field targetstart string -- [Search and Replace (since 3.10)] (non inheritable): sets and gets the start of target. When searching in non-regular expression mode, you can set TARGETSTART greater than TARGETEND to find the last matching text in the target rather than the first matching text. The first position of text is 0. If set to NULL, 0 will be used (since 3.23).
+---@field targetend string -- [Search and Replace (since 3.10)] (non inheritable): sets and gets the end of target. If set to -1 or NULL, target end will be the last position of text (since 3.23).
+---@field targetfromselection string -- [Search and Replace (since 3.10)] (non inheritable, write only): set the target start and end from current position of the selection.
+---@field targetwholedocument string -- [Search and Replace (since 3.10)] (non inheritable, write only): Set the target start to the start of the document and target end to the end of the document. (since 3.23)
+---@field replacetarget string -- [Search and Replace (since 3.10)] (non inheritable, write only): replaces the target text. After replacement, the target range refers to the replacement text.
+---
 ---@field bgcolor string -- Background color of the text. Default: the global attribute TXTBGCOLOR. If changed it will affect the background color of all styles (since 3.23).
 ---@field fgcolor string -- Text color. Default: the global attribute TXTFGCOLOR. If changed it will affect the foreground color of all styles (since 3.23).
----@field 
+---@field font string -- [Style Definition] the text font. Default: the global attribute DEFAULTFONT. If changed it will affect all the font attributes of all styles (since 3.23).
+---@field stylebgcolorID string -- [Style Definition] (non inheritable): background color for a style (See Style Definition). Values in RGB format ("r g b").
+---@field styleboldID string -- [Style Definition] (non inheritable): the boldness of a font (See Style Definition).
+---@field stylecaseID string -- [Style Definition] (non inheritable): determines how text is displayed (See Style Definition). Values: LOWERCASE, UPPERCASE or MIXED (default).
+---@field stylecharsetID string -- [Style Definition] (non inheritable): sets and gets a style to use a different character set than the default (See Style Definition). Can be ANSI (default), EASTEUROPE, RUSSIAN, GB2312, HANGUL or SHIFTJIS.
+---@field styleclearall string -- [Style Definition] (non inheritable): sets all styles to have the same attributes as default global style (id = 32) (See Style Definition).
+---@field styleeolfilledID string -- [Style Definition] (non inheritable): If the last character in the line has a style with this attribute set, the remainder of the line up to the right edge of the window is filled with the background color set for the last character (See Style Definition). Can be YES (italic) or NO.
+---@field stylefgcolorID string -- [Style Definition] (non inheritable): foreground color for a style (See Style Definition). Values in RGB format ("r g b").
+---@field stylefontID string -- [Style Definition] (non inheritable): sets and gets the font name (See Style Definition). Scintilla caches fonts by their names, but the cache is case sensitive.
+---@field stylefontsizeID string -- [Style Definition] (non inheritable): sets and gets the font size (See Style Definition), using a integer number of points.
+---@field stylefontsizefracID string -- [Style Definition] (non inheritable): sets and gets the font size (See Style Definition), using a fractional point size in hundredths of a point. For example, a text size of 9.4 points is set with value = 940.
+---@field stylehotspotID string -- [Style Definition] (non inheritable): used to mark ranges of text that can detect mouse clicks (See Style Definition). The cursor changes to a hand over hotspots, and the foreground, and background colors may change and an underline appear to indicate that these areas are sensitive to clicking. This may be used to allow hyperlinks to other documents.
+---@field styleitalicID string -- [Style Definition] (non inheritable): the italic style of a font (See Style Definition). Can be YES (italic) or NO.
+---@field stylereset string -- [Style Definition] (non inheritable, write-only): Resets to the initial Scintilla style default (See Style Definition).
+---@field styleunderlineID string -- [Style Definition] (non inheritable): determines if the underline is drawn, using a foreground color (See Style Definition). Can be YES (underline) or NO.
+---@field stylevisibleID string -- [Style Definition] (non inheritable): determines if the text is visible (YES) or hidden (NO) (See Style Definition).
+---@field styleweightID string -- [Style Definition] (non inheritable): the weight of a font (See Style Definition). Predefined values: NORMAL, SEMIBOLD and BOLD. The weight can also be a number between 1 and 999 with 1 being very light and 999 very heavy.
+---
+---@field cleardocumentstyle string -- [Styling] (non inheritable, write-only): clear all styling information and reset the folding state.
+---@field startstyling string -- [Styling] (non inheritable, write only): prepares for styling by setting the styling position.
+---@field stylingID string -- [Styling] (non inheritable, write only): sets the style of given length characters starting at the styling position and then increases the styling position by length. id is the style.
+---
+---@field tabsize string -- [Tabs and Indentation Guides] (non inheritable): Controls the number of characters for a tab stop. Default: 8.
+---@field indentationguides string -- [Tabs and Indentation Guides] (non inheritable): dotted vertical lines that appear within indentation white space every indent size columns. Can be: NONE, REAL, LOOKFORWARD, LOOKBOTH. Default: NONE.
+---@field highlightguide string -- [Tabs and Indentation Guides] (non inheritable): Highlights the indentation guide of a given column. When brace highlighting occurs, the indentation guide corresponding to the braces may be highlighted with the brace highlighting style (See Style Definition, id = 34). Set column to 0 to cancel this highlight.
+---@field usetabs string -- [Tabs and Indentation Guides] (non inheritable): Use tabs also for indentation or only spaces. Can be Yes or No. Default: Yes.
+---
+---@field redo string -- (non inheritable): redo the last operation if set to Yes, redo all operations if set to ALL, clears the undo information otherwise. Returns Yes or No if redo can be performed.
+---@field undo string -- (non inheritable): undo the last operation if set to Yes, undo all operations if set to ALL, clears the undo information otherwise. Returns Yes or No if undo can be performed.
+---@field undocollect string -- (non inheritable): enable or disable the undo collect of information. Can be Yes or No. Default: Yes.
+---@field undoaction string -- (non inheritable, write only): allows to create a block of undo operations. Can be BEGIN (start a bock) or END (end a block). (since 3.21)
+---
+---@field extraascent string -- [White Space] (non inheritable): sets and gets the space to be added to the maximum ascent, in order to allow for more space between lines. Default: 0.
+---@field extradescent string -- [White Space] (non inheritable): sets and gets the space to be added to the maximum descent, in order to allow for more space between lines. Default: 0.
+---@field whitespaceview string -- [White Space] (non inheritable): sets and gets the white space display mode. The white spaces can be: "INVISIBLE" (shown as an empty background color), "VISIBLEALWAYS" (drawn as dots and arrows) or "VISIBLEAFTERINDENT" (white space used for indentation is displayed normally but after the first visible character, it is shown as dots and arrows). Default: INVISIBLE.
+---@field whitespacesize string -- [White Space] (non inheritable): sets and gets the size of the dots used for mark space characters. Default: 3.
+---@field whitespacefgcolor string -- [White Space] (non inheritable, write only): defines the foreground color of visible white space. Values in RGB format ("r g b"). By default the color will be defined by the Lexer, but defining this attribute will overriding the Lexer definition. Set to NULL to reset the definition and use the Lexer again.
+---@field whitespacebgcolor string -- [White Space] (non inheritable, write only): defines the background color of visible white space. Values in RGB format ("r g b"). By default the color will be defined by the Lexer, but defining this attribute will overriding the Lexer definition. Set to NULL to reset the definition and use the Lexer again. 
+---
+---@field zoomin string -- (non inheritable, write only): increases the zoom factor by one point if the current zoom factor is less than 20 points.
+---@field zoomout string -- (non inheritable, write only): decreases the zoom factor by one point if the current zoom factor is greater than -10 points.
+---@field zoom string -- (non inheritable): sets and gets the zoom factor directly. Limits: -10 points to zoom out and 20 points to zoom in.
 local scintilla = {}
--- TODO:
+---Action generated when the text is edited, but before its value is actually changed. Can be generated when using the keyboard, undo/redo system or from the clipboard.
+---@param self scintilla
+---@param insert 0|1 -- =1 when text is inserted, =0 when text is deleted
+---@param pos integer -- 0 based character position when change started
+---@param length integer -- size of the change
+---@param text string|nil -- the inserted text value. It is NULL when insert=0
+scintilla.action = function(self, insert, pos, length, text) end
+scintilla.autocselection_cb = autocselection_cb
+scintilla.autoccancelled_cb = autoccancelled_cb
+scintilla.autocchardeleted_cb = autocchardeleted_cb
+scintilla.button_cb = button_cb
+scintilla.caret_cb = caret_cb
+scintilla.insertcheck_cb = insertcheck_cb
+scintilla.dropfiles_cb = dropfiles_cb
+scintilla.dwell_cb = dwell_cb
+scintilla.hotspotclick_cb = hotspotclick_cb
+scintilla.lineschanged_cb = lineschanged_cb
+scintilla.marginclick_cb = marginclick_cb
+scintilla.motion_cb = motion_cb
+scintilla.savepoint_cb = savepoint_cb
+scintilla.updatecontent_cb = updatecontent_cb
+scintilla.updateselection_cb = updateselection_cb
+scintilla.updatehscroll_cb = updatehscroll_cb
+scintilla.updatevscroll_cb = updatevscroll_cb
+scintilla.valuechanged_cb = valuechanged_cb
+scintilla.zoom_cb = zoom_cb
+scintilla.map_cb = map_cb
+scintilla.unmap_cb = unmap_cb
+scintilla.destroy_cb = destroy_cb
+scintilla.getfocus_cb = getfocus_cb
+scintilla.killfocus_cb = killfocus_cb
+scintilla.enterwindow_cb = enterwindow_cb
+scintilla.leavewindow_cb = leavewindow_cb
+scintilla.k_any = k_any
+scintilla.help_cb = help_cb
+-- TODO: scintilla: add yes_no and other aliances for its attributes
 
 ---Creates a web browser control. It is responsible for managing the drawing of the web browser content and forwarding of its events.
 ---
